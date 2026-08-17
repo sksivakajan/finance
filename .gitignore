@@ -3,6 +3,7 @@ dist/
 build/
 .next/
 coverage/
+*.tsbuildinfo
 
 .env
 .env.local
@@ -20,6 +21,7 @@ apps/api/uploads/
 
 # Prisma
 apps/api/prisma/dev.db*
+apps/api/src/generated/
 
 # Portable local dev services (Postgres/Redis binaries + data), see scripts/dev-db.md
 .tools/

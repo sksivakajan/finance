@@ -1,0 +1,327 @@
+// Phase 1 subset of docs/BLUEPRINT.md §6. Only models needed for auth, profile,
+// personal finance (income/expense/category), loans, scheduled payments,
+// notifications, and audit logging are migrated now. Friend/chat/group/shared-
+// expense/settlement models are added by their own migrations when Phase 2/3
+// begin, per docs/BLUEPRINT.md §16.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- AUTH / USER ----------
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  passwordHash    String
+  username        String    @unique // stored lowercase; display case kept in usernameDisplay
+  usernameDisplay String
+  status          UserStatus @default(ACTIVE)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  profile           UserProfile?
+  sessions          Session[]
+  twoFactor         TwoFactorSecret?
+  categories        Category[]
+  incomes           Income[]
+  expenses          Expense[]
+  loans             Loan[]
+  scheduledPayments ScheduledPayment[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+
+  @@index([username])
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+model UserProfile {
+  userId          String   @id
+  user            User     @relation(fields: [userId], references: [id])
+  displayName     String
+  avatarUrl       String?
+  bio             String?
+  defaultCurrency String   @default("LKR")
+  timezone        String   @default("UTC")
+
+  // Reserved for Phase 2 friend/chat enforcement; not yet read by any module.
+  whoCanFriendRequest VisibilityAudience @default(EVERYONE)
+  whoCanMessage       VisibilityAudience @default(FRIENDS)
+  whoCanSeeProfile    VisibilityAudience @default(EVERYONE)
+  whoCanAddToGroups   VisibilityAudience @default(FRIENDS)
+
+  updatedAt DateTime @updatedAt
+}
+
+enum VisibilityAudience {
+  EVERYONE
+  FRIENDS
+  NOBODY
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  refreshTokenHash String
+  userAgent        String?
+  ipAddress        String?
+  deviceLabel      String?
+  createdAt        DateTime  @default(now())
+  lastUsedAt       DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+
+  @@index([userId])
+}
+
+model TwoFactorSecret {
+  userId            String   @id
+  user              User     @relation(fields: [userId], references: [id])
+  secretEnc         String // encrypted at rest via TWO_FACTOR_ENCRYPTION_KEY
+  enabled           Boolean  @default(false)
+  recoveryCodesHash String[] // hashed, single-use
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ---------- PERSONAL FINANCE ----------
+
+model Category {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  name            String
+  kind            CategoryKind
+  icon            String?
+  isSystemDefault Boolean   @default(false)
+  archivedAt      DateTime?
+
+  incomes  Income[]
+  expenses Expense[]
+
+  @@unique([userId, name, kind])
+}
+
+enum CategoryKind {
+  INCOME
+  EXPENSE
+}
+
+model Income {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  amountMinor     BigInt
+  currency        String
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  source          String
+  description     String?
+  date            DateTime
+  isRecurring     Boolean   @default(false)
+  recurrenceRule  String?
+  attachmentUrl   String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  @@index([userId, date])
+}
+
+// Personal-only in Phase 1: every expense belongs to and was paid by its owner.
+// Splitting, participants, and group linkage arrive in the Phase 3 migration.
+model Expense {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amountMinor   BigInt
+  currency      String
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  merchant      String?
+  description   String?
+  date          DateTime
+  paymentMethod String?
+  attachmentUrl String?
+  notes         String?
+  isRecurring   Boolean   @default(false)
+  recurrenceRule String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  @@index([userId, date])
+}
+
+// ---------- LOANS ----------
+
+model Loan {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id])
+  direction          LoanDirection
+  counterpartyName   String
+  principalMinor     BigInt
+  currency           String
+  interestRateBps    Int?
+  startDate          DateTime
+  status             LoanStatus @default(ACTIVE)
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  schedule LoanSchedule?
+  payments LoanPayment[]
+
+  @@index([userId, status])
+}
+
+enum LoanDirection {
+  I_OWE
+  OWED_TO_ME
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID_OFF
+  DEFAULTED
+  CANCELLED
+}
+
+model LoanSchedule {
+  loanId           String   @id
+  loan             Loan     @relation(fields: [loanId], references: [id])
+  installmentMinor BigInt
+  frequency        RecurrenceFrequency
+  nextDueDate      DateTime
+}
+
+model LoanPayment {
+  id          String   @id @default(cuid())
+  loanId      String
+  loan        Loan     @relation(fields: [loanId], references: [id])
+  amountMinor BigInt
+  date        DateTime
+  method      String?
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([loanId, date])
+}
+
+// ---------- SCHEDULED PAYMENTS ----------
+
+model ScheduledPayment {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  name           String
+  amountMinor    BigInt
+  currency       String
+  categoryId     String?
+  dueDate        DateTime
+  recurrence     RecurrenceFrequency @default(NONE)
+  status         ScheduledPaymentStatus @default(UPCOMING)
+  notes          String?
+  parentSeriesId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  reminders Reminder[]
+
+  @@index([userId, dueDate])
+  @@index([userId, status])
+}
+
+enum RecurrenceFrequency {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum ScheduledPaymentStatus {
+  UPCOMING
+  DUE
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Reminder {
+  id                 String    @id @default(cuid())
+  scheduledPaymentId String
+  scheduledPayment   ScheduledPayment @relation(fields: [scheduledPaymentId], references: [id])
+  offsetDays         Int
+  firedAt            DateTime?
+}
+
+// ---------- NOTIFICATIONS / AUDIT ----------
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  type      NotificationType
+  payload   Json
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+// Full enum from the blueprint kept here even though only a subset (PAYMENT_DUE,
+// PAYMENT_OVERDUE, LOAN_REMINDER) is emitted by Phase 1 code, so Phase 2/3
+// modules don't require an enum migration just to start emitting their types.
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_REQUEST_ACCEPTED
+  NEW_MESSAGE
+  MENTION
+  EXPENSE_CREATED
+  EXPENSE_UPDATED
+  MONEY_REQUEST
+  PAYMENT_RECEIVED
+  PAYMENT_DUE
+  PAYMENT_OVERDUE
+  LOAN_REMINDER
+  GROUP_INVITATION
+  SETTLEMENT_REQUEST
+  SETTLEMENT_COMPLETED
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actor        User?    @relation(fields: [actorId], references: [id])
+  action       String
+  resourceType String
+  resourceId   String
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([resourceType, resourceId])
+  @@index([actorId, createdAt])
+}
