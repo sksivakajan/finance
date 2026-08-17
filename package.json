@@ -7,9 +7,10 @@
   },
   "packageManager": "pnpm@11.22.0",
   "scripts": {
-    "dev:api": "pnpm --filter @finance/api dev",
-    "dev:web": "pnpm --filter @finance/web dev",
-    "build": "pnpm -r build",
+    "build:shared": "pnpm --filter @finance/shared build",
+    "dev:api": "pnpm build:shared && pnpm --filter @finance/api dev",
+    "dev:web": "pnpm build:shared && pnpm --filter @finance/web dev",
+    "build": "pnpm build:shared && pnpm --filter @finance/api build && pnpm --filter @finance/web build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint"
   }

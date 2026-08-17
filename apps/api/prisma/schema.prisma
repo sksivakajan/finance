@@ -32,13 +32,14 @@ model User {
   profile           UserProfile?
   sessions          Session[]
   twoFactor         TwoFactorSecret?
-  categories        Category[]
-  incomes           Income[]
-  expenses          Expense[]
-  loans             Loan[]
-  scheduledPayments ScheduledPayment[]
-  notifications     Notification[]
-  auditLogs         AuditLog[]
+  categories          Category[]
+  incomes             Income[]
+  expenses            Expense[]
+  loans               Loan[]
+  scheduledPayments   ScheduledPayment[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  verificationTokens  VerificationToken[]
 
   @@index([username])
 }
@@ -97,6 +98,28 @@ model TwoFactorSecret {
   recoveryCodesHash String[] // hashed, single-use
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// Single-use tokens for email verification and password reset. Only the SHA-256
+// hash is stored (not the token itself) so a DB read alone can't be used to
+// impersonate the link; the plaintext token only ever exists in the emailed URL.
+model VerificationToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  purpose   VerificationTokenPurpose
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, purpose])
+  @@index([tokenHash])
+}
+
+enum VerificationTokenPurpose {
+  EMAIL_VERIFY
+  PASSWORD_RESET
 }
 
 // ---------- PERSONAL FINANCE ----------

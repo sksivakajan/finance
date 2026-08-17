@@ -1,6 +1,7 @@
-import { Controller, Get } from "@nestjs/common";
-import { AppService } from "./app.service.js";
-import { PrismaService } from "./prisma/prisma.service.js";
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service.js';
+import { PrismaService } from './prisma/prisma.service.js';
+import { Public } from './common/decorators/public.decorator.js';
 
 @Controller()
 export class AppController {
@@ -9,6 +10,7 @@ export class AppController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @Public()
   @Get()
   getHello(): string {
     return this.appService.getHello();
@@ -16,9 +18,10 @@ export class AppController {
 
   // Temporary connectivity check for Phase 1, Step 3 verification.
   // Superseded by a proper health module once the auth/user modules land.
-  @Get("health/db")
+  @Public()
+  @Get('health/db')
   async checkDb() {
     await this.prisma.$queryRaw`SELECT 1`;
-    return { status: "ok", database: "connected" };
+    return { status: 'ok', database: 'connected' };
   }
 }
