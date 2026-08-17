@@ -1,0 +1,16 @@
+{
+  "name": "finance-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.22.0",
+  "scripts": {
+    "dev:api": "pnpm --filter @finance/api dev",
+    "dev:web": "pnpm --filter @finance/web dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  }
+}

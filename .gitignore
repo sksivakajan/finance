@@ -1,0 +1,22 @@
+node_modules/
+dist/
+build/
+.next/
+coverage/
+
+.env
+.env.local
+.env.*.local
+
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+.DS_Store
+Thumbs.db
+
+# local dev file uploads (local-disk StorageProvider)
+apps/api/uploads/
+
+# Prisma
+apps/api/prisma/dev.db*
