@@ -20,3 +20,6 @@ apps/api/uploads/
 
 # Prisma
 apps/api/prisma/dev.db*
+
+# Portable local dev services (Postgres/Redis binaries + data), see scripts/dev-db.md
+.tools/
