@@ -1,0 +1,85 @@
+"use client";
+
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import type { LoginInput } from "@finance/shared";
+import { api, ApiError, refreshAccessToken } from "./api-client";
+import { setAccessToken } from "./token-store";
+import type { PublicUser } from "./types";
+
+type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+
+interface AuthContextValue {
+  user: PublicUser | null;
+  status: AuthStatus;
+  login: (input: LoginInput) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<PublicUser | null>(null);
+  const [status, setStatus] = useState<AuthStatus>("loading");
+
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await api.get<PublicUser>("/users/me");
+      setUser(me);
+      setStatus("authenticated");
+    } catch {
+      setUser(null);
+      setStatus("unauthenticated");
+    }
+  }, []);
+
+  useEffect(() => {
+    // On first load there's no access token in memory yet — try the httpOnly
+    // refresh cookie to silently resume a session (standard SPA pattern).
+    let cancelled = false;
+    (async () => {
+      const ok = await refreshAccessToken();
+      if (cancelled) return;
+      if (ok) {
+        await refreshUser();
+      } else {
+        setStatus("unauthenticated");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const login = useCallback(
+    async (input: LoginInput) => {
+      const { accessToken } = await api.post<{ accessToken: string }>("/auth/login", input);
+      setAccessToken(accessToken);
+      await refreshUser();
+    },
+    [refreshUser],
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/auth/logout");
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+      setStatus("unauthenticated");
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, status, login, logout, refreshUser }}>{children}</AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+}
+
+export { ApiError };

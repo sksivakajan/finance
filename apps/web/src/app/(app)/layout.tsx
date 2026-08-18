@@ -3,20 +3,24 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { AppShell } from "@/components/layout/app-shell";
 import { Spinner } from "@/components/ui/spinner";
 
-export default function RootPage() {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { status } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === "authenticated") router.replace("/dashboard");
     if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
 
-  return (
-    <div className="flex flex-1 items-center justify-center">
-      <Spinner />
-    </div>
-  );
+  if (status !== "authenticated") {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return <AppShell>{children}</AppShell>;
 }

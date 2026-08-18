@@ -18,8 +18,10 @@ export const createScheduledPaymentSchema = z.object({
   reminderOffsetDays: z.array(z.number().int().min(0).max(90)).max(10).default([7, 3, 1, 0]),
 });
 export type CreateScheduledPaymentInput = z.infer<typeof createScheduledPaymentSchema>;
+export type CreateScheduledPaymentRequest = z.input<typeof createScheduledPaymentSchema>;
 
 export const updateScheduledPaymentSchema = createScheduledPaymentSchema
   .omit({ reminderOffsetDays: true })
   .partial();
 export type UpdateScheduledPaymentInput = z.infer<typeof updateScheduledPaymentSchema>;
+export type UpdateScheduledPaymentRequest = z.input<typeof updateScheduledPaymentSchema>;

@@ -18,6 +18,8 @@ export const createExpenseSchema = z.object({
   recurrenceRule: recurrenceFrequencySchema.optional(),
 });
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
+export type CreateExpenseRequest = z.input<typeof createExpenseSchema>;
 
 export const updateExpenseSchema = createExpenseSchema.partial();
 export type UpdateExpenseInput = z.infer<typeof updateExpenseSchema>;
+export type UpdateExpenseRequest = z.input<typeof updateExpenseSchema>;

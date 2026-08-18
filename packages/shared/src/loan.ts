@@ -24,6 +24,7 @@ export const createLoanSchema = z.object({
     .optional(),
 });
 export type CreateLoanInput = z.infer<typeof createLoanSchema>;
+export type CreateLoanRequest = z.input<typeof createLoanSchema>;
 
 export const updateLoanSchema = z.object({
   counterpartyName: z.string().trim().min(1).max(100).optional(),
@@ -41,3 +42,4 @@ export const createLoanPaymentSchema = z.object({
   notes: z.string().trim().max(1000).optional(),
 });
 export type CreateLoanPaymentInput = z.infer<typeof createLoanPaymentSchema>;
+export type CreateLoanPaymentRequest = z.input<typeof createLoanPaymentSchema>;
