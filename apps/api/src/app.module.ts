@@ -11,6 +11,7 @@ import { IncomeModule } from './modules/finance/income/income.module.js';
 import { ExpenseModule } from './modules/finance/expense/expense.module.js';
 import { ScheduledPaymentModule } from './modules/finance/scheduled-payment/scheduled-payment.module.js';
 import { LoanModule } from './modules/finance/loan/loan.module.js';
+import { ReportingModule } from './modules/finance/reporting/reporting.module.js';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { LoanModule } from './modules/finance/loan/loan.module.js';
     ExpenseModule,
     ScheduledPaymentModule,
     LoanModule,
+    ReportingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
