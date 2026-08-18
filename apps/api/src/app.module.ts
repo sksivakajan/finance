@@ -7,6 +7,10 @@ import { RedisModule } from './redis/redis.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { UserModule } from './modules/user/user.module.js';
 import { CategoryModule } from './modules/finance/category/category.module.js';
+import { IncomeModule } from './modules/finance/income/income.module.js';
+import { ExpenseModule } from './modules/finance/expense/expense.module.js';
+import { ScheduledPaymentModule } from './modules/finance/scheduled-payment/scheduled-payment.module.js';
+import { LoanModule } from './modules/finance/loan/loan.module.js';
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { CategoryModule } from './modules/finance/category/category.module.js';
     AuthModule,
     UserModule,
     CategoryModule,
+    IncomeModule,
+    ExpenseModule,
+    ScheduledPaymentModule,
+    LoanModule,
   ],
   controllers: [AppController],
   providers: [AppService],

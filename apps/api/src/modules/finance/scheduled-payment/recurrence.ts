@@ -1,0 +1,24 @@
+import type { RecurrenceFrequency } from '../../../generated/prisma/enums.js';
+
+/** Advances `date` by one occurrence of `frequency`. Never call with NONE. */
+export function nextOccurrence(
+  date: Date,
+  frequency: Exclude<RecurrenceFrequency, 'NONE'>,
+): Date {
+  const next = new Date(date);
+  switch (frequency) {
+    case 'DAILY':
+      next.setUTCDate(next.getUTCDate() + 1);
+      break;
+    case 'WEEKLY':
+      next.setUTCDate(next.getUTCDate() + 7);
+      break;
+    case 'MONTHLY':
+      next.setUTCMonth(next.getUTCMonth() + 1);
+      break;
+    case 'YEARLY':
+      next.setUTCFullYear(next.getUTCFullYear() + 1);
+      break;
+  }
+  return next;
+}
