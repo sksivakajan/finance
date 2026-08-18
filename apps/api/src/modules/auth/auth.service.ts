@@ -14,23 +14,11 @@ import { TokenService } from './services/token.service.js';
 import { TwoFactorService } from './services/two-factor.service.js';
 import { EmailService } from './services/email.service.js';
 import { VerificationTokenService } from './services/verification-token.service.js';
-
-const RESERVED_USERNAMES = new Set([
-  'admin',
-  'administrator',
-  'root',
-  'support',
-  'system',
-  'moderator',
-  'staff',
-  'official',
-  'help',
-  'api',
-  'null',
-  'undefined',
-  'finance',
-  'security',
-]);
+import { RESERVED_USERNAMES } from '../../common/reserved-usernames.js';
+import {
+  DEFAULT_EXPENSE_CATEGORIES,
+  DEFAULT_INCOME_CATEGORIES,
+} from '../finance/category/default-categories.js';
 
 interface RequestMeta {
   ipAddress?: string;
@@ -80,6 +68,20 @@ export class AuthService {
             displayName: input.displayName,
             defaultCurrency: this.env.values.DEFAULT_CURRENCY,
           },
+        },
+        categories: {
+          create: [
+            ...DEFAULT_EXPENSE_CATEGORIES.map((c) => ({
+              ...c,
+              kind: 'EXPENSE' as const,
+              isSystemDefault: true,
+            })),
+            ...DEFAULT_INCOME_CATEGORIES.map((c) => ({
+              ...c,
+              kind: 'INCOME' as const,
+              isSystemDefault: true,
+            })),
+          ],
         },
       },
     });
