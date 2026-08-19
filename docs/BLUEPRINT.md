@@ -1432,6 +1432,65 @@ earns its keep once something later actually needs it:
 
 ---
 
+## 21. Phase 4 Implementation Notes (2026-08-19)
+
+Shipped: cash-flow forecasting (`GET /forecast?days=`) that projects a
+starting balance forward through every recurring income/expense occurrence,
+scheduled payment, and active loan installment expected to land within the
+window, and per-loan payoff projections (`GET /forecast/loans/:loanId`) —
+remaining balance after each future installment until it hits zero. Every
+response carries `isEstimate: true` per the blueprint's own framing ("explicitly
+labeled as an estimate"), and the frontend repeats the disclaimer visibly, not
+just in the API shape. `occurrencesInWindow` (a new helper alongside
+`nextOccurrence` in `recurrence.ts`) generates every occurrence of a recurring
+series inside `[start, end]`, fast-forwarding past a series that began long
+before the window instead of walking it occurrence-by-occurrence from origin.
+
+Two real bugs found and fixed while browser-testing this feature (the e2e
+suite had used precise `new Date().toISOString()` timestamps in its fixtures,
+which don't reproduce what the actual `<input type="date">` forms submit —
+a lesson now baked into the regression tests added for both):
+- **A same-day item vanished from its own forecast.** The window's lower
+  bound was `new Date()` (this exact instant), so a bill due "today" — stored
+  as midnight UTC, since date inputs are date-only — read as already in the
+  past the moment any time had elapsed since midnight. Fixed by using the
+  *start of today* as the window boundary everywhere (`asOf` in the response
+  still reports the real current instant).
+- **A recurring income/expense's own recorded date was double-counted.**
+  `startingBalanceMinor` already sums every recorded Income/Expense row
+  (including ones dated today), so projecting that same row's date forward
+  as a *future* event on top of the starting balance counted it twice. Fixed
+  by projecting from `nextOccurrence(record.date, frequency)` — the first
+  not-yet-recorded instance — not from the record's own date. This distinction
+  doesn't apply to ScheduledPayment/LoanSchedule, whose `dueDate`/
+  `nextDueDate` represent an *unpaid* obligation rather than something
+  already recorded, so their own next-due date is correctly included.
+
+Also added, since the feature was otherwise untestable end-to-end: the loan
+creation form now exposes the optional installment schedule
+(installment amount, frequency, next due date) that the API and shared schema
+already supported but no UI ever surfaced.
+
+Deliberate scope reductions:
+- **No recurring-income/expense UI.** `isRecurring`/`recurrenceRule` are set-
+  table via the API and shared schema (and are exactly what the forecast
+  projects), but the Income/Expense forms don't expose them — the checkbox
+  exists on Expense's create form for splitting, not recurrence. Until that
+  lands, a forecast is only as useful as loans/scheduled-payments make it,
+  which do have full UI support.
+- **No CSV/PDF export.** Explicitly deferred in the blueprint's own feature
+  table (§2: "later"), not a Phase 4 scope decision.
+- **No amortized interest.** `Loan.interestRateBps` is stored but the payoff
+  projection just subtracts flat installments from principal — an
+  amortization schedule (interest vs. principal split per installment) isn't
+  computed anywhere yet.
+- **No historical friend-balance trend report.** `GET /balances` (Phase 3) is
+  already a live, correctly-derived "reporting" view in the blueprint's sense;
+  a month-by-month trend would need bucketing the same event stream by time,
+  which is possible but wasn't built.
+
+---
+
 **Next step**: blueprint approved with the decisions above. Beginning Phase 1,
 Step 1 (pnpm workspace scaffold + Docker environment for Postgres/Redis) as the
 first concrete implementation increment.

@@ -1,4 +1,4 @@
-import { nextOccurrence } from './recurrence.js';
+import { nextOccurrence, occurrencesInWindow } from './recurrence.js';
 
 describe('nextOccurrence', () => {
   it('advances DAILY by one day', () => {
@@ -49,5 +49,51 @@ describe('nextOccurrence', () => {
     expect(
       nextOccurrence(new Date('2026-08-25T14:30:15Z'), 'MONTHLY').toISOString(),
     ).toBe('2026-09-25T14:30:15.000Z');
+  });
+});
+
+describe('occurrencesInWindow', () => {
+  it('fast-forwards a series that started long before the window', () => {
+    // A MONTHLY series that began a year before the window should only
+    // report the occurrences actually inside it, not every occurrence since
+    // the series began.
+    const dates = occurrencesInWindow(
+      new Date('2025-08-15T00:00:00Z'),
+      'MONTHLY',
+      new Date('2026-08-01T00:00:00Z'),
+      new Date('2026-08-31T00:00:00Z'),
+    );
+    expect(dates).toHaveLength(1);
+    expect(dates[0].toISOString()).toBe('2026-08-15T00:00:00.000Z');
+  });
+
+  it('includes multiple occurrences within a wide window', () => {
+    const dates = occurrencesInWindow(
+      new Date('2026-08-01T00:00:00Z'),
+      'WEEKLY',
+      new Date('2026-08-01T00:00:00Z'),
+      new Date('2026-08-31T00:00:00Z'),
+    );
+    expect(dates).toHaveLength(5);
+  });
+
+  it('returns nothing when the series has not started yet by the window end', () => {
+    const dates = occurrencesInWindow(
+      new Date('2027-01-01T00:00:00Z'),
+      'MONTHLY',
+      new Date('2026-08-01T00:00:00Z'),
+      new Date('2026-08-31T00:00:00Z'),
+    );
+    expect(dates).toEqual([]);
+  });
+
+  it('is inclusive of both window boundaries', () => {
+    const dates = occurrencesInWindow(
+      new Date('2026-08-01T00:00:00Z'),
+      'DAILY',
+      new Date('2026-08-01T00:00:00Z'),
+      new Date('2026-08-01T00:00:00Z'),
+    );
+    expect(dates).toHaveLength(1);
   });
 });

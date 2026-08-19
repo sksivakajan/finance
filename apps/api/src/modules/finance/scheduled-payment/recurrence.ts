@@ -62,3 +62,32 @@ export function nextOccurrence(
     }
   }
 }
+
+/** Every occurrence of a recurring series that falls within
+ * `[windowStart, windowEnd]` (inclusive), regardless of how far in the past
+ * `startDate` is — used by forecasting to project recurring income/expenses/
+ * scheduled payments forward from *now*, not from whenever the series began.
+ * The iteration cap guards against a pathological series (e.g. a decades-old
+ * DAILY item) burning unbounded time. */
+export function occurrencesInWindow(
+  startDate: Date,
+  frequency: Exclude<RecurrenceFrequency, 'NONE'>,
+  windowStart: Date,
+  windowEnd: Date,
+): Date[] {
+  const MAX_ITERATIONS = 10_000;
+  const occurrences: Date[] = [];
+  let occurrence = startDate;
+  let iterations = 0;
+
+  while (occurrence < windowStart && iterations < MAX_ITERATIONS) {
+    occurrence = nextOccurrence(occurrence, frequency);
+    iterations++;
+  }
+  while (occurrence <= windowEnd && iterations < MAX_ITERATIONS) {
+    occurrences.push(occurrence);
+    occurrence = nextOccurrence(occurrence, frequency);
+    iterations++;
+  }
+  return occurrences;
+}

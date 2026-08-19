@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useLoanList, useCreateLoan, useAddLoanPayment } from "@/lib/hooks/use-loans";
+import { useLoanPayoffForecast } from "@/lib/hooks/use-forecast";
 import { formatMoney, toMinorUnits } from "@/lib/money";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/cn";
@@ -23,8 +24,36 @@ const STATUS_STYLES: Record<LoanRecord["status"], string> = {
   CANCELLED: "bg-slate-100 text-slate-400",
 };
 
+function PayoffSchedule({ loanId, currency }: { loanId: string; currency: string }) {
+  const { data, isLoading } = useLoanPayoffForecast(loanId);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-4">
+        <Spinner />
+      </div>
+    );
+  }
+  if (!data || data.points.length === 0) {
+    return <p className="mt-3 text-xs text-slate-500">No payment schedule set for this loan.</p>;
+  }
+  return (
+    <div className="mt-3 space-y-1 border-t border-slate-100 pt-3">
+      <p className="text-xs text-amber-700">Estimate — assumes every installment lands on schedule.</p>
+      <ul className="max-h-48 space-y-1 overflow-y-auto text-xs">
+        {data.points.map((p, i) => (
+          <li key={i} className="flex justify-between text-slate-600">
+            <span>{new Date(p.date).toLocaleDateString()}</span>
+            <span className="tabular-nums">{formatMoney(p.remainingMinor, currency)} remaining</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function LoanCard({ loan, currency }: { loan: LoanRecord; currency: string }) {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [showPayoff, setShowPayoff] = useState(false);
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +89,14 @@ function LoanCard({ loan, currency }: { loan: LoanRecord; currency: string }) {
           <p className="text-xs text-slate-500">{loan.direction === "I_OWE" ? "You owe" : "Owed to you"}</p>
         </div>
         {loan.status === "ACTIVE" && (
-          <Button size="sm" variant="secondary" onClick={() => setShowPaymentForm((v) => !v)}>
-            {showPaymentForm ? "Cancel" : "Record payment"}
-          </Button>
+          <div className="flex shrink-0 gap-2">
+            <Button size="sm" variant="ghost" onClick={() => setShowPayoff((v) => !v)}>
+              {showPayoff ? "Hide payoff" : "Payoff schedule"}
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setShowPaymentForm((v) => !v)}>
+              {showPaymentForm ? "Cancel" : "Record payment"}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -84,6 +118,8 @@ function LoanCard({ loan, currency }: { loan: LoanRecord; currency: string }) {
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
         <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.min(progressPct, 100)}%` }} />
       </div>
+
+      {showPayoff && <PayoffSchedule loanId={loan.id} currency={loan.currency} />}
 
       {showPaymentForm && (
         <form onSubmit={handleAddPayment} className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
@@ -125,6 +161,10 @@ export default function LoansPage() {
   const [counterpartyName, setCounterpartyName] = useState("");
   const [principal, setPrincipal] = useState("");
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [hasSchedule, setHasSchedule] = useState(false);
+  const [installment, setInstallment] = useState("");
+  const [frequency, setFrequency] = useState<"WEEKLY" | "MONTHLY" | "YEARLY">("MONTHLY");
+  const [nextDueDate, setNextDueDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
@@ -137,9 +177,20 @@ export default function LoansPage() {
         principalMinor: toMinorUnits(principal),
         currency,
         startDate: new Date(startDate),
+        ...(hasSchedule
+          ? {
+              schedule: {
+                installmentMinor: toMinorUnits(installment),
+                frequency,
+                nextDueDate: new Date(nextDueDate),
+              },
+            }
+          : {}),
       });
       setCounterpartyName("");
       setPrincipal("");
+      setHasSchedule(false);
+      setInstallment("");
       setShowForm(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong.");
@@ -189,6 +240,50 @@ export default function LoansPage() {
             <div>
               <Label htmlFor="startDate">Start date</Label>
               <Input id="startDate" type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={hasSchedule}
+                  onChange={(e) => setHasSchedule(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                Set a repeating installment schedule
+              </label>
+              {hasSchedule && (
+                <div className="mt-2 grid gap-4 sm:grid-cols-3">
+                  <div>
+                    <Label htmlFor="installment">Installment ({currency})</Label>
+                    <Input
+                      id="installment"
+                      inputMode="decimal"
+                      placeholder="0.00"
+                      required={hasSchedule}
+                      value={installment}
+                      onChange={(e) => setInstallment(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="frequency">Frequency</Label>
+                    <Select id="frequency" value={frequency} onChange={(e) => setFrequency(e.target.value as typeof frequency)}>
+                      <option value="WEEKLY">Weekly</option>
+                      <option value="MONTHLY">Monthly</option>
+                      <option value="YEARLY">Yearly</option>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="nextDueDate">Next due date</Label>
+                    <Input
+                      id="nextDueDate"
+                      type="date"
+                      required={hasSchedule}
+                      value={nextDueDate}
+                      onChange={(e) => setNextDueDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             <div className="sm:col-span-2">
               <ErrorText>{error}</ErrorText>

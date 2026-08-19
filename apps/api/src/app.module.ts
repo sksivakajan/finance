@@ -20,6 +20,7 @@ import { BalanceModule } from './modules/finance/balance/balance.module.js';
 import { GroupModule } from './modules/finance/group/group.module.js';
 import { MoneyRequestModule } from './modules/finance/money-request/money-request.module.js';
 import { SettlementModule } from './modules/finance/settlement/settlement.module.js';
+import { ForecastModule } from './modules/finance/forecast/forecast.module.js';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SettlementModule } from './modules/finance/settlement/settlement.module
     GroupModule,
     MoneyRequestModule,
     SettlementModule,
+    ForecastModule,
   ],
   controllers: [AppController],
   providers: [AppService],
