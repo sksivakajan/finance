@@ -4,10 +4,16 @@ import type { AccessTokenPayload } from '../../auth/services/token.service.js';
 import { ReportingService } from './reporting.service.js';
 
 const MAX_MONTHS = 24;
+const MAX_DAYS = 180;
 
 function parseMonths(raw?: string): number {
   const n = raw ? Number.parseInt(raw, 10) : 6;
   return Number.isFinite(n) && n > 0 ? Math.min(n, MAX_MONTHS) : 6;
+}
+
+function parseDays(raw?: string): number {
+  const n = raw ? Number.parseInt(raw, 10) : 30;
+  return Number.isFinite(n) && n > 0 ? Math.min(n, MAX_DAYS) : 30;
 }
 
 @Controller('reports')
@@ -44,6 +50,14 @@ export class ReportsController {
     @Query('months') months?: string,
   ) {
     return this.reporting.getCashFlow(user.sub, parseMonths(months));
+  }
+
+  @Get('balance-history')
+  balanceHistory(
+    @CurrentUser() user: AccessTokenPayload,
+    @Query('days') days?: string,
+  ) {
+    return this.reporting.getBalanceHistory(user.sub, parseDays(days));
   }
 
   @Get('category-breakdown')

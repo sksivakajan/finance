@@ -200,6 +200,101 @@ export class ReportingService {
     }));
   }
 
+  /**
+   * Running total balance (lifetime income - lifetime expenses) as of each
+   * of the last `days` days, for the dashboard's cash-flow line chart. Not
+   * a daily net-flow series -- a cumulative position, so it starts from the
+   * balance immediately before the window rather than from zero.
+   */
+  async getBalanceHistory(userId: string, days: number) {
+    const now = new Date();
+    const windowStart = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - (days - 1),
+      ),
+    );
+    const windowEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+    );
+
+    const [priorIncome, priorExpenses, windowIncome, windowExpenses] =
+      await Promise.all([
+        this.prisma.income.aggregate({
+          where: { userId, deletedAt: null, date: { lt: windowStart } },
+          _sum: { amountMinor: true },
+        }),
+        this.prisma.expense.aggregate({
+          where: {
+            ownerId: userId,
+            deletedAt: null,
+            date: { lt: windowStart },
+          },
+          _sum: { amountMinor: true },
+        }),
+        this.prisma.income.findMany({
+          where: {
+            userId,
+            deletedAt: null,
+            date: { gte: windowStart, lt: windowEnd },
+          },
+          select: { date: true, amountMinor: true },
+        }),
+        this.prisma.expense.findMany({
+          where: {
+            ownerId: userId,
+            deletedAt: null,
+            date: { gte: windowStart, lt: windowEnd },
+          },
+          select: { date: true, amountMinor: true },
+        }),
+      ]);
+
+    const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+    const incomeByDay = new Map<string, bigint>();
+    for (const row of windowIncome) {
+      const key = dayKey(row.date);
+      incomeByDay.set(key, (incomeByDay.get(key) ?? 0n) + row.amountMinor);
+    }
+    const expensesByDay = new Map<string, bigint>();
+    for (const row of windowExpenses) {
+      const key = dayKey(row.date);
+      expensesByDay.set(key, (expensesByDay.get(key) ?? 0n) + row.amountMinor);
+    }
+
+    let runningBalance =
+      (priorIncome._sum.amountMinor ?? 0n) -
+      (priorExpenses._sum.amountMinor ?? 0n);
+
+    const points: {
+      date: string;
+      balanceMinor: string;
+      incomeMinor: string;
+      expensesMinor: string;
+    }[] = [];
+    for (let i = 0; i < days; i++) {
+      const d = new Date(
+        Date.UTC(
+          windowStart.getUTCFullYear(),
+          windowStart.getUTCMonth(),
+          windowStart.getUTCDate() + i,
+        ),
+      );
+      const key = dayKey(d);
+      const income = incomeByDay.get(key) ?? 0n;
+      const expenses = expensesByDay.get(key) ?? 0n;
+      runningBalance += income - expenses;
+      points.push({
+        date: key,
+        balanceMinor: runningBalance.toString(),
+        incomeMinor: income.toString(),
+        expensesMinor: expenses.toString(),
+      });
+    }
+    return points;
+  }
+
   async getCategoryBreakdown(
     userId: string,
     kind: 'INCOME' | 'EXPENSE',

@@ -275,3 +275,29 @@ export interface DashboardSummary {
     label: string;
   }[];
 }
+
+export interface BalanceHistoryPoint {
+  date: string;
+  balanceMinor: string;
+  incomeMinor: string;
+  expensesMinor: string;
+}
+
+export interface MonthlySeriesPoint {
+  month: string;
+  amountMinor: string;
+}
+
+export interface CashFlowMonth {
+  month: string;
+  incomeMinor: string;
+  expensesMinor: string;
+  netMinor: string;
+}
+
+export interface CategoryBreakdownEntry {
+  categoryId: string;
+  name: string;
+  icon: string | null;
+  amountMinor: string;
+}
