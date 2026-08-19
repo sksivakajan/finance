@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/lib/auth-context";
+import { NotificationBell } from "./notification-bell";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -11,6 +12,8 @@ const NAV_ITEMS = [
   { href: "/expenses", label: "Expenses" },
   { href: "/scheduled-payments", label: "Scheduled payments" },
   { href: "/loans", label: "Loans" },
+  { href: "/friends", label: "Friends" },
+  { href: "/chat", label: "Chat" },
 ];
 
 export function Sidebar() {
@@ -19,8 +22,9 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="px-5 py-5">
+      <div className="flex items-center justify-between px-5 py-5">
         <span className="text-lg font-semibold text-slate-900">Finance</span>
+        <NotificationBell />
       </div>
       <nav className="flex-1 space-y-1 px-3">
         {NAV_ITEMS.map((item) => {

@@ -13,6 +13,9 @@ import { ScheduledPaymentModule } from './modules/finance/scheduled-payment/sche
 import { LoanModule } from './modules/finance/loan/loan.module.js';
 import { ReportingModule } from './modules/finance/reporting/reporting.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
+import { NotificationModule } from './modules/notification/notification.module.js';
+import { FriendModule } from './modules/friend/friend.module.js';
+import { ChatModule } from './modules/chat/chat.module.js';
 
 @Module({
   imports: [
@@ -28,6 +31,9 @@ import { UploadModule } from './modules/upload/upload.module.js';
     LoanModule,
     ReportingModule,
     UploadModule,
+    NotificationModule,
+    FriendModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

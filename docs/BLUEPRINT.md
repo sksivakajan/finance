@@ -1,6 +1,7 @@
 # Finance + Friends + Chat — Technical Blueprint
 
-Status: **DRAFT — awaiting approval before Phase 1 implementation begins.**
+Status: **Phase 1 and Phase 2 implemented.** See §19 for what Phase 2 shipped
+and where it deliberately narrowed the stub in §6/§9 below.
 
 This document is the single source of truth for architecture, data model, financial
 rules, API contracts, and the security model. It corresponds to Section 53 of the
@@ -1334,6 +1335,41 @@ commit.
    private plans — they only see amounts tied to expenses actually shared with
    them (how much they owe the user, or are owed). This matches §2/§13 exactly as
    already designed; no change needed.
+
+---
+
+## 19. Phase 2 Implementation Notes (2026-08-19)
+
+Shipped: friend requests (send/accept/reject/cancel), friendships, a dedicated
+`Block` model (blocking works against a non-friend, not just to end an existing
+friendship — see the model comment in §6), user search, direct-message chat
+(text + one image/file attachment per message via the existing `/uploads`
+endpoint, edit, soft-delete, read tracking), and an in-app notification feed
+(`FRIEND_REQUEST`, `FRIEND_REQUEST_ACCEPTED`, `NEW_MESSAGE`) with an unread-count
+bell in the nav. All object-level authorization follows the Phase 1 pattern —
+every conversation/message/friend-request route re-checks membership or
+ownership server-side, never trusting the client.
+
+Deliberate scope reductions from the §6/§9 stub, each because the missing piece
+only earns its keep once a later phase needs it:
+- **No WebSocket gateway.** `socket.io`/`@nestjs/platform-socket.io` aren't
+  reachable from this environment's npm registry (same class of issue as
+  `@types/multer` in Phase 1 — see `apps/api/src/types/multer.d.ts`). The
+  frontend polls instead (`apps/web/src/lib/hooks/use-chat.ts`,
+  `use-notifications.ts`: ~3s while a conversation is open, ~8-15s for
+  conversation/notification lists). Swap in the real gateway once the registry
+  is reachable; the REST shape doesn't need to change.
+- **DIRECT conversations only.** `ConversationType` dropped `GROUP` — group
+  chat is tied to the `Group` model, which doesn't exist until Phase 3.
+- **No `MessageAttachment`/`MessageRead` tables.** `attachmentUrl` lives
+  directly on `Message` (one attachment per message), and read state is a
+  single `lastReadAt` per `ConversationMember` instead of a row per message.
+  Both only earn their keep once group chat needs "read by 3 of 5" or
+  multi-attachment messages.
+- **No notification preferences.** The Phase 1 API spec (§7) listed
+  `GET/PATCH /notifications/preferences`, but there's only one channel
+  actually implemented (in-app) — no push, no email digest — so a
+  preferences model would have nothing to configure yet.
 
 ---
 

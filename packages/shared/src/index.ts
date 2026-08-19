@@ -6,3 +6,5 @@ export * from "./income.js";
 export * from "./expense.js";
 export * from "./scheduled-payment.js";
 export * from "./loan.js";
+export * from "./friend.js";
+export * from "./chat.js";

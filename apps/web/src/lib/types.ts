@@ -112,6 +112,77 @@ export interface PaginatedResult<T> {
   nextCursor: string | null;
 }
 
+export interface FriendUser {
+  id: string;
+  username: string;
+  usernameDisplay: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export interface Friend {
+  friendshipId: string;
+  since: string;
+  user: FriendUser;
+}
+
+export interface FriendRequestView {
+  id: string;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
+  createdAt: string;
+  user: FriendUser;
+}
+
+export interface ConversationSummary {
+  conversationId: string;
+  otherUser: FriendUser | null;
+  lastMessage: {
+    id: string;
+    body: string | null;
+    type: "TEXT" | "IMAGE" | "FILE" | "SYSTEM";
+    senderId: string;
+    createdAt: string;
+    deleted: boolean;
+  } | null;
+  unreadCount: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  type: "TEXT" | "IMAGE" | "FILE" | "SYSTEM";
+  body: string | null;
+  attachmentUrl: string | null;
+  editedAt: string | null;
+  deleted: boolean;
+  createdAt: string;
+}
+
+export type NotificationType =
+  | "FRIEND_REQUEST"
+  | "FRIEND_REQUEST_ACCEPTED"
+  | "NEW_MESSAGE"
+  | "MENTION"
+  | "EXPENSE_CREATED"
+  | "EXPENSE_UPDATED"
+  | "MONEY_REQUEST"
+  | "PAYMENT_RECEIVED"
+  | "PAYMENT_DUE"
+  | "PAYMENT_OVERDUE"
+  | "LOAN_REMINDER"
+  | "GROUP_INVITATION"
+  | "SETTLEMENT_REQUEST"
+  | "SETTLEMENT_COMPLETED";
+
+export interface NotificationRecord {
+  id: string;
+  type: NotificationType;
+  payload: Record<string, unknown>;
+  readAt: string | null;
+  createdAt: string;
+}
+
 export interface DashboardSummary {
   currentMonth: { incomeMinor: string; expensesMinor: string };
   balance: { amountMinor: string };

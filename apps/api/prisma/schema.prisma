@@ -1,8 +1,8 @@
-// Phase 1 subset of docs/BLUEPRINT.md §6. Only models needed for auth, profile,
-// personal finance (income/expense/category), loans, scheduled payments,
-// notifications, and audit logging are migrated now. Friend/chat/group/shared-
-// expense/settlement models are added by their own migrations when Phase 2/3
-// begin, per docs/BLUEPRINT.md §16.
+// Phase 1 + Phase 2 subset of docs/BLUEPRINT.md §6. Auth, profile, personal
+// finance, loans, scheduled payments, notifications, audit logging (Phase 1),
+// plus friends/blocking and direct-message chat (Phase 2) are migrated now.
+// Group/shared-expense/settlement models are added when Phase 3 begins, per
+// docs/BLUEPRINT.md §16.
 
 generator client {
   provider     = "prisma-client"
@@ -40,6 +40,15 @@ model User {
   notifications       Notification[]
   auditLogs           AuditLog[]
   verificationTokens  VerificationToken[]
+  sentFriendRequests  FriendRequest[]      @relation("FriendRequestSender")
+  recvFriendRequests  FriendRequest[]      @relation("FriendRequestReceiver")
+  friendshipsA        Friendship[]         @relation("FriendshipUserA")
+  friendshipsB        Friendship[]         @relation("FriendshipUserB")
+  blocksMade          Block[]              @relation("BlockBlocker")
+  blocksReceived      Block[]              @relation("BlockBlocked")
+  conversationMembers ConversationMember[]
+  messages            Message[]
+  messageReactions    MessageReaction[]
 
   @@index([username])
 }
@@ -59,7 +68,6 @@ model UserProfile {
   defaultCurrency String   @default("LKR")
   timezone        String   @default("UTC")
 
-  // Reserved for Phase 2 friend/chat enforcement; not yet read by any module.
   whoCanFriendRequest VisibilityAudience @default(EVERYONE)
   whoCanMessage       VisibilityAudience @default(FRIENDS)
   whoCanSeeProfile    VisibilityAudience @default(EVERYONE)
@@ -297,6 +305,138 @@ model Reminder {
   scheduledPayment   ScheduledPayment @relation(fields: [scheduledPaymentId], references: [id])
   offsetDays         Int
   firedAt            DateTime?
+}
+
+// ---------- FRIENDS ----------
+
+model FriendRequest {
+  id          String    @id @default(cuid())
+  senderId    String
+  sender      User      @relation("FriendRequestSender", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User      @relation("FriendRequestReceiver", fields: [receiverId], references: [id])
+  status      FriendRequestStatus @default(PENDING)
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  // Only one live (pending) request per direction; a resolved request doesn't
+  // block a fresh one, so this is enforced in the service layer (which checks
+  // for an existing PENDING row) rather than as a hard DB constraint — that
+  // lets "reject, then request again later" work without deleting history.
+  @@index([senderId, receiverId])
+  @@index([receiverId, status])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+// One row per friend pair, created when a request is accepted. userAId is
+// always the lexicographically smaller id (canonical ordering enforced in
+// the service layer) so a pair never gets two rows in opposite order.
+model Friendship {
+  id        String   @id @default(cuid())
+  userAId   String
+  userA     User     @relation("FriendshipUserA", fields: [userAId], references: [id])
+  userBId   String
+  userB     User     @relation("FriendshipUserB", fields: [userBId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+}
+
+// Deliberately its own table rather than a flag on Friendship (per
+// docs/BLUEPRINT.md's stub): blocking must work against a stranger who was
+// never a friend, not just to end an existing friendship.
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blocker   User     @relation("BlockBlocker", fields: [blockerId], references: [id])
+  blockedId String
+  blocked   User     @relation("BlockBlocked", fields: [blockedId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+// ---------- CHAT ----------
+//
+// Scoped down from docs/BLUEPRINT.md's full stub for this phase: DIRECT
+// conversations only (GROUP arrives with the Group model in Phase 3),
+// attachmentUrl lives directly on Message instead of a separate
+// MessageAttachment table (one attachment per message is enough for now),
+// and read state is a single lastReadAt per member instead of a MessageRead
+// row per message (per-message read receipts only earn their keep once
+// group chat needs "read by 3 of 5").
+
+model Conversation {
+  id        String   @id @default(cuid())
+  type      ConversationType @default(DIRECT)
+  createdAt DateTime @default(now())
+
+  members  ConversationMember[]
+  messages Message[]
+}
+
+enum ConversationType {
+  DIRECT
+}
+
+model ConversationMember {
+  id             String    @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  userId         String
+  user           User      @relation(fields: [userId], references: [id])
+  joinedAt       DateTime  @default(now())
+  mutedUntil     DateTime?
+  archivedAt     DateTime?
+  lastReadAt     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String
+  sender         User      @relation(fields: [senderId], references: [id])
+  type           MessageType @default(TEXT)
+  body           String?
+  attachmentUrl  String?
+  editedAt       DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime  @default(now())
+
+  reactions MessageReaction[]
+
+  @@index([conversationId, createdAt])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
 }
 
 // ---------- NOTIFICATIONS / AUDIT ----------
