@@ -83,6 +83,27 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, isRetry = fa
   return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
+// Separate from apiFetch: a multipart body must NOT get a manual
+// Content-Type header (the browser has to set its own boundary=... value),
+// where apiFetch always forces application/json whenever a body is present.
+async function apiUpload<T>(path: string, formData: FormData, isRetry = false): Promise<T> {
+  const token = getAccessToken();
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    credentials: "include",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: formData,
+  });
+
+  if (res.status === 401 && !isRetry) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) return apiUpload<T>(path, formData, true);
+  }
+
+  if (!res.ok) throw await toApiError(res);
+  return (await res.json()) as T;
+}
+
 export const api = {
   get: <T>(path: string): Promise<T> => apiFetch<T>(path),
   post: <T>(path: string, body?: unknown): Promise<T> =>
@@ -91,4 +112,9 @@ export const api = {
     apiFetch<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
   delete: <T>(path: string, body?: unknown): Promise<T> =>
     apiFetch<T>(path, { method: "DELETE", body: body !== undefined ? JSON.stringify(body) : undefined }),
+  uploadFile: (file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return apiUpload<{ url: string }>("/uploads", formData);
+  },
 };

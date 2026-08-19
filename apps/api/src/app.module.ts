@@ -12,6 +12,7 @@ import { ExpenseModule } from './modules/finance/expense/expense.module.js';
 import { ScheduledPaymentModule } from './modules/finance/scheduled-payment/scheduled-payment.module.js';
 import { LoanModule } from './modules/finance/loan/loan.module.js';
 import { ReportingModule } from './modules/finance/reporting/reporting.module.js';
+import { UploadModule } from './modules/upload/upload.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ReportingModule } from './modules/finance/reporting/reporting.module.js
     ScheduledPaymentModule,
     LoanModule,
     ReportingModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -10,7 +10,9 @@ export const createIncomeSchema = z.object({
   date: z.coerce.date(),
   isRecurring: z.boolean().default(false),
   recurrenceRule: recurrenceFrequencySchema.optional(),
-  attachmentUrl: z.string().trim().url().optional(),
+  // Relative path from POST /uploads (e.g. "/uploads/<userId>/<file>"), not
+  // an absolute URL — the upload endpoint doesn't know its own public origin.
+  attachmentUrl: z.string().trim().min(1).max(500).optional(),
   notes: z.string().trim().max(1000).optional(),
 });
 // Output type (post-parse: amountMinor is a real bigint) — what backend code

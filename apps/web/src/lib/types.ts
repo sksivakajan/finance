@@ -56,6 +56,7 @@ export interface ExpenseRecord {
   description: string | null;
   date: string;
   paymentMethod: string | null;
+  attachmentUrl: string | null;
   notes: string | null;
   isRecurring: boolean;
   recurrenceRule: string | null;
