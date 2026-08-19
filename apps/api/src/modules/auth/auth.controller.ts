@@ -199,6 +199,11 @@ export class AuthController {
     return this.auth.enableTwoFactor(user.sub, account.email);
   }
 
+  // 2FA codes are only 6 digits (1e6 combinations) and confirm/disable are
+  // otherwise gated purely by a valid access token — rate limit them the
+  // same as login's twoFactorCode check, so a stolen/leaked access token
+  // can't be used to brute-force the code itself.
+  @RateLimit({ points: 10, windowSeconds: 60 })
   @Post('2fa/verify')
   confirmTwoFactor(
     @CurrentUser() user: AccessTokenPayload,
@@ -208,6 +213,7 @@ export class AuthController {
     return this.auth.confirmTwoFactor(user.sub, body.code);
   }
 
+  @RateLimit({ points: 10, windowSeconds: 60 })
   @Post('2fa/disable')
   disableTwoFactor(
     @CurrentUser() user: AccessTokenPayload,

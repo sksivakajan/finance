@@ -20,10 +20,7 @@ function ResetPasswordInner() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!token) {
-      setError("This link is missing a reset token.");
-      return;
-    }
+    if (!token) return;
     setError(null);
     setIsSubmitting(true);
     try {
@@ -35,6 +32,20 @@ function ResetPasswordInner() {
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (!token) {
+    return (
+      <div className="text-center">
+        <h1 className="mb-2 text-xl font-semibold text-slate-900">Invalid reset link</h1>
+        <p className="text-sm text-slate-600">
+          This password reset link is missing or incomplete. Request a new one to continue.
+        </p>
+        <Link href="/forgot-password" className="mt-6 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500">
+          Request a new link
+        </Link>
+      </div>
+    );
   }
 
   if (done) {
