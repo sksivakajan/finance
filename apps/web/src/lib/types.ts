@@ -295,6 +295,13 @@ export interface CashFlowMonth {
   netMinor: string;
 }
 
+export interface IncomeSummary {
+  totalMinor: string;
+  avgMonthlyMinor: string;
+  thisMonthMinor: string;
+  lastMonthMinor: string;
+}
+
 export interface CategoryBreakdownEntry {
   categoryId: string;
   name: string;

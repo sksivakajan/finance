@@ -88,4 +88,35 @@ describe('Reports (e2e)', () => {
     ).expect(200);
     expect(res.body).toHaveLength(180);
   });
+
+  it('computes lifetime total, this/last month, and a monthly average for a fresh user', async () => {
+    const summaryUser = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-summary`,
+    );
+    const now = new Date();
+    const midThisMonth = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 15),
+    );
+
+    await auth(request(server()).post('/income'), summaryUser.accessToken)
+      .send({
+        amountMinor: '100000',
+        currency: 'LKR',
+        source: 'Salary',
+        date: midThisMonth.toISOString(),
+      })
+      .expect(201);
+
+    const res = await auth(
+      request(server()).get('/reports/income-summary'),
+      summaryUser.accessToken,
+    ).expect(200);
+    expect(res.body.totalMinor).toBe('100000');
+    expect(res.body.thisMonthMinor).toBe('100000');
+    expect(res.body.lastMonthMinor).toBe('0');
+    // Only one calendar month (this one) has any income recorded yet.
+    expect(res.body.avgMonthlyMinor).toBe('100000');
+  });
 });

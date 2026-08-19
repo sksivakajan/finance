@@ -200,6 +200,69 @@ export class ReportingService {
     }));
   }
 
+  /** Lifetime + this-month/last-month income totals, plus a lifetime
+   * monthly average, for the income page's summary cards. Averages over the
+   * number of calendar months since the user's first-ever income record
+   * (not since account creation), so a brand-new record from today counts
+   * as one month, not a division by a huge idle history. */
+  async getIncomeSummary(userId: string) {
+    const now = new Date();
+    const monthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
+    const monthEnd = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1),
+    );
+    const lastMonthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1),
+    );
+
+    const [total, thisMonth, lastMonth, first] = await Promise.all([
+      this.prisma.income.aggregate({
+        where: { userId, deletedAt: null },
+        _sum: { amountMinor: true },
+      }),
+      this.prisma.income.aggregate({
+        where: {
+          userId,
+          deletedAt: null,
+          date: { gte: monthStart, lt: monthEnd },
+        },
+        _sum: { amountMinor: true },
+      }),
+      this.prisma.income.aggregate({
+        where: {
+          userId,
+          deletedAt: null,
+          date: { gte: lastMonthStart, lt: monthStart },
+        },
+        _sum: { amountMinor: true },
+      }),
+      this.prisma.income.findFirst({
+        where: { userId, deletedAt: null },
+        orderBy: { date: 'asc' },
+        select: { date: true },
+      }),
+    ]);
+
+    const totalMinor = total._sum.amountMinor ?? 0n;
+    let monthsActive = 1;
+    if (first) {
+      const months =
+        (now.getUTCFullYear() - first.date.getUTCFullYear()) * 12 +
+        (now.getUTCMonth() - first.date.getUTCMonth()) +
+        1;
+      monthsActive = Math.max(1, months);
+    }
+
+    return {
+      totalMinor: totalMinor.toString(),
+      avgMonthlyMinor: (totalMinor / BigInt(monthsActive)).toString(),
+      thisMonthMinor: (thisMonth._sum.amountMinor ?? 0n).toString(),
+      lastMonthMinor: (lastMonth._sum.amountMinor ?? 0n).toString(),
+    };
+  }
+
   /**
    * Running total balance (lifetime income - lifetime expenses) as of each
    * of the last `days` days, for the dashboard's cash-flow line chart. Not

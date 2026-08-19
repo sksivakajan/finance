@@ -44,6 +44,11 @@ export class ReportsController {
     );
   }
 
+  @Get('income-summary')
+  incomeSummary(@CurrentUser() user: AccessTokenPayload) {
+    return this.reporting.getIncomeSummary(user.sub);
+  }
+
   @Get('cash-flow')
   cashFlow(
     @CurrentUser() user: AccessTokenPayload,

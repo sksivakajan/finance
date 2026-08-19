@@ -7,7 +7,7 @@ import { useDashboardSummary } from "@/lib/hooks/use-dashboard";
 import { useBalanceHistory, useCashFlow, useCategoryBreakdown } from "@/lib/hooks/use-reports";
 import { useBalances } from "@/lib/hooks/use-balances";
 import { formatMoney } from "@/lib/money";
-import { SummaryCard } from "@/components/dashboard/summary-card";
+import { SummaryCard } from "@/components/ui/summary-card";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryList } from "@/components/dashboard/category-list";
 import { FriendsBalanceList } from "@/components/dashboard/friends-balance-list";
