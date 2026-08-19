@@ -17,6 +17,7 @@ import {
   type UpdateMessageInput,
 } from '@finance/shared';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { RateLimit } from '../../common/decorators/rate-limit.decorator.js';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { parsePagination } from '../../common/pagination.js';
 import type { AccessTokenPayload } from '../auth/services/token.service.js';
@@ -55,6 +56,7 @@ export class ChatController {
   }
 
   @Post('conversations/:id/messages')
+  @RateLimit({ points: 60, windowSeconds: 60 })
   sendMessage(
     @CurrentUser() user: AccessTokenPayload,
     @Param('id') id: string,

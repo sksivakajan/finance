@@ -151,4 +151,58 @@ describe('Friends (e2e)', () => {
       .expect(400);
     expect(res.body.error.code).toBe('REQUEST_NOT_ALLOWED');
   });
+
+  it('excludes a friends-only profile from search for a non-friend, but shows it once they are friends', async () => {
+    const searcher = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-searcher`,
+    );
+    const target = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-target`,
+    );
+
+    await auth(request(server()).patch('/users/me'), target.accessToken)
+      .send({ whoCanSeeProfile: 'FRIENDS' })
+      .expect(200);
+
+    const before = await auth(
+      request(server()).get(`/friends/search?q=${target.username}`),
+      searcher.accessToken,
+    ).expect(200);
+    expect(
+      before.body.items.some(
+        (u: { username: string }) => u.username === target.username,
+      ),
+    ).toBe(false);
+
+    await auth(
+      request(server()).post('/friends/requests'),
+      searcher.accessToken,
+    )
+      .send({ username: target.username })
+      .expect(201);
+    const incoming = await auth(
+      request(server()).get('/friends/requests?direction=incoming'),
+      target.accessToken,
+    ).expect(200);
+    await auth(
+      request(server()).post(
+        `/friends/requests/${incoming.body.items[0].id}/accept`,
+      ),
+      target.accessToken,
+    ).expect(201);
+
+    const after = await auth(
+      request(server()).get(`/friends/search?q=${target.username}`),
+      searcher.accessToken,
+    ).expect(200);
+    expect(
+      after.body.items.some(
+        (u: { username: string }) => u.username === target.username,
+      ),
+    ).toBe(true);
+  });
 });

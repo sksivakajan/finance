@@ -17,6 +17,7 @@ import type { ChatMessage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorText } from "@/components/ui/error-text";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
 
 const ACCEPTED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/heic,application/pdf";
@@ -87,7 +88,7 @@ function Bubble({
 export default function ConversationPage({ params }: { params: Promise<{ conversationId: string }> }) {
   const { conversationId } = use(params);
   const { user } = useAuth();
-  const { data: messagesData, isLoading } = useMessages(conversationId);
+  const { data: messagesData, isLoading, isError } = useMessages(conversationId);
   const { data: conversations } = useConversationList();
   const sendMessage = useSendMessage(conversationId);
   const editMessage = useEditMessage(conversationId);
@@ -160,6 +161,20 @@ export default function ConversationPage({ params }: { params: Promise<{ convers
   }
 
   const name = otherUser?.displayName ?? otherUser?.usernameDisplay ?? "Conversation";
+
+  if (isError) {
+    return (
+      <div className="space-y-4">
+        <Link href="/chat" className="text-sm font-medium text-slate-500 hover:text-slate-700">
+          ← Back
+        </Link>
+        <EmptyState
+          title="Conversation not found"
+          description="This conversation doesn't exist, or you're not a part of it."
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col md:h-[calc(100vh-3rem)]">

@@ -25,6 +25,12 @@ export class GroupService {
           message: 'You can only add friends to a group.',
         });
       }
+      if (!(await this.friends.allowsBeingAddedToGroups(memberId))) {
+        throw new BadRequestException({
+          code: 'CANNOT_ADD_TO_GROUP',
+          message: 'This user is not accepting group invitations.',
+        });
+      }
     }
 
     const group = await this.prisma.group.create({
@@ -75,6 +81,12 @@ export class GroupService {
       throw new BadRequestException({
         code: 'NOT_FRIENDS',
         message: 'You can only add friends to a group.',
+      });
+    }
+    if (!(await this.friends.allowsBeingAddedToGroups(newMemberId))) {
+      throw new BadRequestException({
+        code: 'CANNOT_ADD_TO_GROUP',
+        message: 'This user is not accepting group invitations.',
       });
     }
     const already = group.members.some((m) => m.userId === newMemberId);

@@ -35,22 +35,35 @@ export class FriendService {
       excludedIds.add(b.blockerId === userId ? b.blockedId : b.blockerId);
     }
 
-    const users = await this.prisma.user.findMany({
-      where: {
-        deletedAt: null,
-        id: { notIn: [...excludedIds] },
-        OR: [
-          { username: { contains: q } },
-          { usernameDisplay: { contains: q, mode: 'insensitive' } },
-        ],
-      },
-      include: { profile: true },
-      take: 20,
-    });
+    const [users, friendIds] = await Promise.all([
+      this.prisma.user.findMany({
+        where: {
+          deletedAt: null,
+          id: { notIn: [...excludedIds] },
+          OR: [
+            { username: { contains: q } },
+            { usernameDisplay: { contains: q, mode: 'insensitive' } },
+          ],
+        },
+        include: { profile: true },
+        take: 20,
+      }),
+      this.listFriendUserIds(userId),
+    ]);
+    const friendIdSet = new Set(friendIds);
 
     return {
       items: users
-        .filter((u) => u.profile?.whoCanSeeProfile !== 'NOBODY')
+        .filter((u) => {
+          // NOBODY: never discoverable via search. FRIENDS: only discoverable
+          // by someone who is already a friend (this is a *search/discovery*
+          // gate — an existing friend request/friendship flow doesn't go
+          // through this method, so it's unaffected).
+          const visibility = u.profile?.whoCanSeeProfile ?? 'EVERYONE';
+          if (visibility === 'NOBODY') return false;
+          if (visibility === 'FRIENDS' && !friendIdSet.has(u.id)) return false;
+          return true;
+        })
         .map((u) => this.toPublicUser(u)),
     };
   }
@@ -348,6 +361,27 @@ export class FriendService {
       where: { userAId_userBId: { userAId, userBId } },
     });
     return Boolean(friendship);
+  }
+
+  /** Whether `targetUserId` currently accepts new direct-message conversations
+   * from anyone at all (friendship/block are checked separately by the
+   * caller). Backs `UserProfile.whoCanMessage`, which — like every other
+   * `VisibilityAudience` field — must actually be enforced somewhere, not
+   * just stored and echoed back on `/users/me`. */
+  async allowsMessagesFrom(targetUserId: string): Promise<boolean> {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId: targetUserId },
+    });
+    return profile?.whoCanMessage !== 'NOBODY';
+  }
+
+  /** Whether `targetUserId` currently allows being added to a group at all.
+   * Backs `UserProfile.whoCanAddToGroups`. */
+  async allowsBeingAddedToGroups(targetUserId: string): Promise<boolean> {
+    const profile = await this.prisma.userProfile.findUnique({
+      where: { userId: targetUserId },
+    });
+    return profile?.whoCanAddToGroups !== 'NOBODY';
   }
 
   async isBlockedEitherWay(

@@ -322,5 +322,35 @@ describe('Shared expenses, balances, money requests, settlements (e2e)', () => {
       // b and c each owe 30 into the group pool (a fronted the 90).
       expect(totalSuggested).toBe(60);
     });
+
+    it('rejects a group invitation when the invitee has disabled group invites, both on create and on addMember', async () => {
+      await auth(request(server()).patch('/users/me'), c.accessToken)
+        .send({ whoCanAddToGroups: 'NOBODY' })
+        .expect(200);
+
+      const createRes = await auth(
+        request(server()).post('/groups'),
+        a.accessToken,
+      )
+        .send({ name: 'No Invites', memberUserIds: [c.id] })
+        .expect(400);
+      expect(createRes.body.error.code).toBe('CANNOT_ADD_TO_GROUP');
+
+      const solo = await auth(request(server()).post('/groups'), a.accessToken)
+        .send({ name: 'Solo', memberUserIds: [] })
+        .expect(201);
+      const addRes = await auth(
+        request(server()).post(`/groups/${solo.body.id}/members`),
+        a.accessToken,
+      )
+        .send({ userId: c.id })
+        .expect(400);
+      expect(addRes.body.error.code).toBe('CANNOT_ADD_TO_GROUP');
+
+      // Restore so no later test in this file is affected.
+      await auth(request(server()).patch('/users/me'), c.accessToken)
+        .send({ whoCanAddToGroups: 'EVERYONE' })
+        .expect(200);
+    });
   });
 });

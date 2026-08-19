@@ -203,4 +203,23 @@ describe('Chat (e2e)', () => {
     );
     expect(afterEntry.unreadCount).toBe(0);
   });
+
+  it('refuses to start (or re-fetch) a conversation once the recipient disables messaging', async () => {
+    await auth(request(server()).patch('/users/me'), userB.accessToken)
+      .send({ whoCanMessage: 'NOBODY' })
+      .expect(200);
+
+    const res = await auth(
+      request(server()).post('/conversations'),
+      userA.accessToken,
+    )
+      .send({ friendUserId: userBId })
+      .expect(400);
+    expect(res.body.error.code).toBe('MESSAGING_NOT_ALLOWED');
+
+    // Restore so this doesn't affect any other test relying on userB.
+    await auth(request(server()).patch('/users/me'), userB.accessToken)
+      .send({ whoCanMessage: 'EVERYONE' })
+      .expect(200);
+  });
 });

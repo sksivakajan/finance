@@ -37,6 +37,12 @@ export class ChatService {
         message: 'Unable to message this user.',
       });
     }
+    if (!(await this.friends.allowsMessagesFrom(friendUserId))) {
+      throw new BadRequestException({
+        code: 'MESSAGING_NOT_ALLOWED',
+        message: 'This user is not accepting messages.',
+      });
+    }
 
     const existing = await this.prisma.conversation.findFirst({
       where: {

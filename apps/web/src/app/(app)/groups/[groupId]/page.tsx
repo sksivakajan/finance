@@ -34,7 +34,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const { groupId } = use(params);
   const { user } = useAuth();
   const currency = user?.profile?.defaultCurrency ?? "LKR";
-  const { data: group, isLoading } = useGroup(groupId);
+  const { data: group, isLoading, isError } = useGroup(groupId);
   const { data: expenses } = useGroupExpenses(groupId);
   const { data: groupBalances } = useGroupBalances(groupId);
   const { data: friends } = useFriendList();
@@ -54,10 +54,24 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const [splitState, setSplitState] = useState(emptySplitState);
   const [expenseError, setExpenseError] = useState<string | null>(null);
 
-  if (isLoading || !group) {
+  if (isLoading) {
     return (
       <div className="flex justify-center py-16">
         <Spinner />
+      </div>
+    );
+  }
+
+  if (isError || !group) {
+    return (
+      <div className="space-y-4">
+        <Link href="/groups" className="text-sm font-medium text-slate-500 hover:text-slate-700">
+          ← Back to groups
+        </Link>
+        <EmptyState
+          title="Group not found"
+          description="This group doesn't exist, or you're not a member of it."
+        />
       </div>
     );
   }
