@@ -12,6 +12,7 @@ import {
   type RateLimitOptions,
 } from '../decorators/rate-limit.decorator.js';
 import { RedisService } from '../../redis/redis.service.js';
+import { EnvService } from '../../config/env.service.js';
 
 // Redis-backed fixed-window limiter per docs/BLUEPRINT.md §18 threat model.
 // Checks both the caller's IP and (when present) the account identifier in the
@@ -22,9 +23,18 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly redis: RedisService,
+    private readonly env: EnvService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // The e2e suite legitimately registers/logs in many accounts within
+    // seconds from one "IP" (supertest's in-process loopback) — exactly the
+    // pattern this guard exists to block in production. Rather than weaken
+    // the real limits to accommodate tests, it's simply off under
+    // NODE_ENV=test; manually verified against a live server instead (see
+    // the auth module's commit history).
+    if (this.env.values.NODE_ENV === 'test') return true;
+
     const options = this.reflector.get<RateLimitOptions | undefined>(
       RATE_LIMIT_KEY,
       context.getHandler(),
