@@ -55,7 +55,7 @@ export class ReportingService {
       }),
       this.prisma.expense.aggregate({
         where: {
-          userId,
+          ownerId: userId,
           deletedAt: null,
           date: { gte: monthStart, lt: monthEnd },
         },
@@ -66,7 +66,7 @@ export class ReportingService {
         _sum: { amountMinor: true },
       }),
       this.prisma.expense.aggregate({
-        where: { userId, deletedAt: null },
+        where: { ownerId: userId, deletedAt: null },
         _sum: { amountMinor: true },
       }),
       this.prisma.scheduledPayment.findMany({
@@ -93,7 +93,7 @@ export class ReportingService {
         take: 10,
       }),
       this.prisma.expense.findMany({
-        where: { userId, deletedAt: null },
+        where: { ownerId: userId, deletedAt: null },
         orderBy: { date: 'desc' },
         take: 10,
       }),
@@ -144,8 +144,8 @@ export class ReportingService {
         count: upcomingPayments.length,
         items: upcomingPayments.slice(0, 5),
       },
-      // Friend balances (owed to me / I owe friends) are Phase 3 scope —
-      // shared expenses and the settlement engine don't exist yet.
+      // Friend balances (owed to me / I owe friends) live behind
+      // GET /balances (see BalanceService), not folded into this summary.
       loanObligations: { remainingMinor: totalRemainingOwed },
       recentTransactions,
     };
@@ -172,7 +172,7 @@ export class ReportingService {
             select: { date: true, amountMinor: true },
           })
         : await this.prisma.expense.findMany({
-            where: { userId, deletedAt: null, date: { gte: since } },
+            where: { ownerId: userId, deletedAt: null, date: { gte: since } },
             select: { date: true, amountMinor: true },
           });
 
@@ -217,7 +217,11 @@ export class ReportingService {
             },
           })
         : await this.prisma.expense.findMany({
-            where: { userId, deletedAt: null, date: { gte: from, lt: to } },
+            where: {
+              ownerId: userId,
+              deletedAt: null,
+              date: { gte: from, lt: to },
+            },
             select: {
               amountMinor: true,
               categoryId: true,

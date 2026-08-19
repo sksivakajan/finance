@@ -47,8 +47,13 @@ export interface IncomeRecord {
   notes: string | null;
 }
 
+export type SplitMethod = "NONE" | "EQUAL" | "EXACT" | "PERCENTAGE" | "SHARES";
+export type ExpenseVisibility = "PRIVATE" | "SHARED_WITH_USERS" | "SHARED_WITH_GROUP" | "PARTICIPANTS_ONLY";
+
 export interface ExpenseRecord {
   id: string;
+  ownerId: string;
+  payerId: string;
   amountMinor: string;
   currency: string;
   categoryId: string | null;
@@ -60,6 +65,79 @@ export interface ExpenseRecord {
   notes: string | null;
   isRecurring: boolean;
   recurrenceRule: string | null;
+  splitMethod: SplitMethod;
+  visibility: ExpenseVisibility;
+  groupId: string | null;
+}
+
+export interface SharedExpenseRecord extends ExpenseRecord {
+  myShareMinor: string | null;
+}
+
+export interface CurrencyBalance {
+  currency: string;
+  netMinor: string;
+}
+
+export interface FriendBalance {
+  user: FriendUser | null;
+  balances: CurrencyBalance[];
+}
+
+export interface GroupMemberView {
+  userId: string;
+  role: "OWNER" | "MEMBER";
+  joinedAt: string;
+  username: string;
+  usernameDisplay: string;
+  displayName: string | null;
+  avatarUrl: string | null;
+}
+
+export interface GroupRecord {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  createdById: string;
+  createdAt: string;
+  members: GroupMemberView[];
+}
+
+export interface DebtTransfer {
+  from: FriendUser | null;
+  to: FriendUser | null;
+  amountMinor: string;
+}
+
+export interface OptimizeResult {
+  currency: string;
+  transfers: DebtTransfer[];
+}
+
+export interface MoneyRequestRecord {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  amountMinor: string;
+  currency: string;
+  reason: string;
+  dueDate: string | null;
+  relatedExpenseId: string | null;
+  status: "PENDING" | "PAID" | "DECLINED" | "CANCELLED";
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface SettlementRecord {
+  id: string;
+  payerId: string;
+  receiverId: string;
+  amountMinor: string;
+  currency: string;
+  method: string | null;
+  reference: string | null;
+  notes: string | null;
+  createdAt: string;
 }
 
 export interface Reminder {

@@ -15,6 +15,8 @@ const NAV_ITEMS = [
   { href: "/expenses", label: "Expenses", icon: "🧾" },
   { href: "/scheduled-payments", label: "Upcoming", icon: "⏰" },
   { href: "/loans", label: "Loans", icon: "🏦" },
+  { href: "/balances", label: "Balances", icon: "⚖️" },
+  { href: "/groups", label: "Groups", icon: "🧑‍🤝‍🧑" },
   { href: "/friends", label: "Friends", icon: "👥" },
   { href: "/chat", label: "Chat", icon: "💬" },
 ];

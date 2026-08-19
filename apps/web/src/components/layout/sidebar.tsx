@@ -12,6 +12,8 @@ const NAV_ITEMS = [
   { href: "/expenses", label: "Expenses" },
   { href: "/scheduled-payments", label: "Scheduled payments" },
   { href: "/loans", label: "Loans" },
+  { href: "/balances", label: "Balances" },
+  { href: "/groups", label: "Groups" },
   { href: "/friends", label: "Friends" },
   { href: "/chat", label: "Chat" },
 ];

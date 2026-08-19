@@ -317,6 +317,31 @@ export class FriendService {
     return { items: blocks.map((b) => this.toPublicUser(b.blocked)) };
   }
 
+  /** Public profile info for a set of userIds, keyed by id — used by balance/
+   * group/settlement views that need to label a counterpart without exposing
+   * their private finance data (name/avatar are visible per §13's profile
+   * visibility rules, unrelated to Income/Expense/Loan access). */
+  async getPublicUsersById(
+    userIds: string[],
+  ): Promise<Map<string, PublicUser>> {
+    if (userIds.length === 0) return new Map();
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      include: { profile: true },
+    });
+    return new Map(users.map((u) => [u.id, this.toPublicUser(u)]));
+  }
+
+  async listFriendUserIds(userId: string): Promise<string[]> {
+    const friendships = await this.prisma.friendship.findMany({
+      where: { OR: [{ userAId: userId }, { userBId: userId }] },
+      select: { userAId: true, userBId: true },
+    });
+    return friendships.map((f) =>
+      f.userAId === userId ? f.userBId : f.userAId,
+    );
+  }
+
   async areFriends(userId: string, otherUserId: string): Promise<boolean> {
     const [userAId, userBId] = this.canonicalPair(userId, otherUserId);
     const friendship = await this.prisma.friendship.findUnique({

@@ -4,9 +4,11 @@ import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useExpenseList, useCreateExpense, useUpdateExpense, useRemoveExpense } from "@/lib/hooks/use-expenses";
 import { useCategories } from "@/lib/hooks/use-categories";
+import { useFriendList } from "@/lib/hooks/use-friends";
 import { formatMoney, toMinorUnits, fromMinorUnits } from "@/lib/money";
 import { api, ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/cn";
+import { emptySplitState, splitStateToRequestFields } from "@/lib/split";
 import type { ExpenseRecord } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +18,7 @@ import { Card } from "@/components/ui/card";
 import { ErrorText } from "@/components/ui/error-text";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
+import { SplitEditor } from "@/components/finance/split-editor";
 
 const ACCEPTED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/heic,application/pdf";
 const RECENT_MERCHANT_LIMIT = 6;
@@ -33,6 +36,7 @@ export default function ExpensesPage() {
   const currency = user?.profile?.defaultCurrency ?? "LKR";
   const { data, isLoading } = useExpenseList();
   const { data: categories } = useCategories("EXPENSE");
+  const { data: friends } = useFriendList();
   const createExpense = useCreateExpense();
   const updateExpense = useUpdateExpense();
   const removeExpense = useRemoveExpense();
@@ -44,6 +48,8 @@ export default function ExpensesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isSplitting, setIsSplitting] = useState(false);
+  const [splitState, setSplitState] = useState(emptySplitState);
 
   const isEditing = editingId !== null;
   const isSaving = createExpense.isPending || updateExpense.isPending;
@@ -68,6 +74,8 @@ export default function ExpensesPage() {
     setForm(emptyForm());
     setError(null);
     setUploadError(null);
+    setIsSplitting(false);
+    setSplitState(emptySplitState());
     setShowForm(true);
   }
 
@@ -82,6 +90,11 @@ export default function ExpensesPage() {
     });
     setError(null);
     setUploadError(null);
+    // Editing an already-shared expense's split isn't supported from this
+    // simple form yet -- only new personal-or-shared expenses can pick a
+    // split here. Existing splits stay as they are on edit.
+    setIsSplitting(false);
+    setSplitState(emptySplitState());
     setShowForm(true);
   }
 
@@ -89,6 +102,8 @@ export default function ExpensesPage() {
     setShowForm(false);
     setEditingId(null);
     setForm(emptyForm());
+    setIsSplitting(false);
+    setSplitState(emptySplitState());
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -110,6 +125,10 @@ export default function ExpensesPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (isSplitting && splitState.participantIds.length === 0) {
+      setError("Pick at least one person to split this expense with.");
+      return;
+    }
     const input = {
       amountMinor: toMinorUnits(form.amount),
       currency,
@@ -117,6 +136,7 @@ export default function ExpensesPage() {
       categoryId: form.categoryId || undefined,
       date: new Date(form.date),
       attachmentUrl: form.attachmentUrl || undefined,
+      ...(isSplitting ? splitStateToRequestFields(splitState) : {}),
     };
     try {
       if (editingId) {
@@ -235,6 +255,29 @@ export default function ExpensesPage() {
                 Use today
               </button>
             </div>
+            {!isEditing && friends && friends.items.length > 0 && (
+              <div className="sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={isSplitting}
+                    onChange={(e) => setIsSplitting(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  Split this expense with friends
+                </label>
+                {isSplitting && (
+                  <div className="mt-2">
+                    <SplitEditor
+                      people={friends.items.map((f) => f.user)}
+                      currency={currency}
+                      value={splitState}
+                      onChange={setSplitState}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <div className="sm:col-span-2">
               <Label htmlFor="receipt">Receipt (optional)</Label>
               <input
@@ -292,6 +335,7 @@ export default function ExpensesPage() {
                   <p className="text-xs text-slate-500">
                     {new Date(expense.date).toLocaleDateString()}
                     {expense.attachmentUrl ? " · Receipt attached" : ""}
+                    {expense.splitMethod !== "NONE" ? " · Split" : ""}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

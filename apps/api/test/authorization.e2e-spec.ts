@@ -123,10 +123,13 @@ describe('Cross-user authorization (e2e)', () => {
     });
 
     it('another user cannot read, update, or delete', async () => {
+      // GET goes through assertReadable (owner/participant/group-member),
+      // which 404s rather than 400s -- it's answering "is this visible to
+      // you at all", not "do you own this row" the way write ops do.
       await auth(
         request(server()).get(`/expenses/${expenseId}`),
         userB.accessToken,
-      ).expect(400);
+      ).expect(404);
       await auth(
         request(server()).patch(`/expenses/${expenseId}`),
         userB.accessToken,

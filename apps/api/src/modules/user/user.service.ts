@@ -81,7 +81,9 @@ export class UserService {
           include: { profile: true },
         }),
         this.prisma.income.findMany({ where: { userId, deletedAt: null } }),
-        this.prisma.expense.findMany({ where: { userId, deletedAt: null } }),
+        this.prisma.expense.findMany({
+          where: { ownerId: userId, deletedAt: null },
+        }),
         this.prisma.loan.findMany({
           where: { userId, deletedAt: null },
           include: { payments: true, schedule: true },

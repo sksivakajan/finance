@@ -16,6 +16,10 @@ import { UploadModule } from './modules/upload/upload.module.js';
 import { NotificationModule } from './modules/notification/notification.module.js';
 import { FriendModule } from './modules/friend/friend.module.js';
 import { ChatModule } from './modules/chat/chat.module.js';
+import { BalanceModule } from './modules/finance/balance/balance.module.js';
+import { GroupModule } from './modules/finance/group/group.module.js';
+import { MoneyRequestModule } from './modules/finance/money-request/money-request.module.js';
+import { SettlementModule } from './modules/finance/settlement/settlement.module.js';
 
 @Module({
   imports: [
@@ -34,6 +38,10 @@ import { ChatModule } from './modules/chat/chat.module.js';
     NotificationModule,
     FriendModule,
     ChatModule,
+    BalanceModule,
+    GroupModule,
+    MoneyRequestModule,
+    SettlementModule,
   ],
   controllers: [AppController],
   providers: [AppService],

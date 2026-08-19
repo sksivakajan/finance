@@ -20,9 +20,21 @@ describe('Friends (e2e)', () => {
     app = await createTestApp();
     prisma = app.get(PrismaService);
     emailService = app.get(EmailService);
-    userA = await registerVerifiedUser(app.getHttpServer(), emailService, `${EMAIL_MARKER}-a`);
-    userB = await registerVerifiedUser(app.getHttpServer(), emailService, `${EMAIL_MARKER}-b`);
-    userC = await registerVerifiedUser(app.getHttpServer(), emailService, `${EMAIL_MARKER}-c`);
+    userA = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-a`,
+    );
+    userB = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-b`,
+    );
+    userC = await registerVerifiedUser(
+      app.getHttpServer(),
+      emailService,
+      `${EMAIL_MARKER}-c`,
+    );
   });
 
   afterAll(async () => {
@@ -36,7 +48,10 @@ describe('Friends (e2e)', () => {
   }
 
   it('rejects a friend request to yourself', async () => {
-    const res = await auth(request(server()).post('/friends/requests'), userA.accessToken)
+    const res = await auth(
+      request(server()).post('/friends/requests'),
+      userA.accessToken,
+    )
       .send({ username: userA.username })
       .expect(400);
     expect(res.body.error.code).toBe('CANNOT_FRIEND_SELF');
@@ -55,16 +70,29 @@ describe('Friends (e2e)', () => {
     const requestId = incoming.body.items[0].id as string;
     expect(incoming.body.items[0].user.username).toBe(userA.username);
 
-    await auth(request(server()).post(`/friends/requests/${requestId}/accept`), userB.accessToken).expect(201);
+    await auth(
+      request(server()).post(`/friends/requests/${requestId}/accept`),
+      userB.accessToken,
+    ).expect(201);
 
-    const friendsOfA = await auth(request(server()).get('/friends'), userA.accessToken).expect(200);
-    expect(friendsOfA.body.items.map((f: { user: { username: string } }) => f.user.username)).toContain(
-      userB.username,
-    );
-    const friendsOfB = await auth(request(server()).get('/friends'), userB.accessToken).expect(200);
-    expect(friendsOfB.body.items.map((f: { user: { username: string } }) => f.user.username)).toContain(
-      userA.username,
-    );
+    const friendsOfA = await auth(
+      request(server()).get('/friends'),
+      userA.accessToken,
+    ).expect(200);
+    expect(
+      friendsOfA.body.items.map(
+        (f: { user: { username: string } }) => f.user.username,
+      ),
+    ).toContain(userB.username);
+    const friendsOfB = await auth(
+      request(server()).get('/friends'),
+      userB.accessToken,
+    ).expect(200);
+    expect(
+      friendsOfB.body.items.map(
+        (f: { user: { username: string } }) => f.user.username,
+      ),
+    ).toContain(userA.username);
   });
 
   it('does not let a stranger accept, reject, or cancel a request that is not theirs', async () => {
@@ -77,10 +105,19 @@ describe('Friends (e2e)', () => {
     ).expect(200);
     const requestId = incoming.body.items[0].id as string;
 
-    await auth(request(server()).post(`/friends/requests/${requestId}/accept`), userB.accessToken).expect(403);
-    await auth(request(server()).post(`/friends/requests/${requestId}/cancel`), userB.accessToken).expect(403);
+    await auth(
+      request(server()).post(`/friends/requests/${requestId}/accept`),
+      userB.accessToken,
+    ).expect(403);
+    await auth(
+      request(server()).post(`/friends/requests/${requestId}/cancel`),
+      userB.accessToken,
+    ).expect(403);
 
-    await auth(request(server()).post(`/friends/requests/${requestId}/reject`), userC.accessToken).expect(201);
+    await auth(
+      request(server()).post(`/friends/requests/${requestId}/reject`),
+      userC.accessToken,
+    ).expect(201);
   });
 
   it('blocking cancels pending requests and prevents new ones both ways', async () => {
@@ -89,10 +126,16 @@ describe('Friends (e2e)', () => {
       .expect(201);
 
     const userCId = (
-      await auth(request(server()).get('/friends/requests?direction=incoming'), userA.accessToken).expect(200)
+      await auth(
+        request(server()).get('/friends/requests?direction=incoming'),
+        userA.accessToken,
+      ).expect(200)
     ).body.items[0].user.id as string;
 
-    await auth(request(server()).post(`/friends/${userCId}/block`), userA.accessToken).expect(201);
+    await auth(
+      request(server()).post(`/friends/${userCId}/block`),
+      userA.accessToken,
+    ).expect(201);
 
     const stillIncoming = await auth(
       request(server()).get('/friends/requests?direction=incoming'),
@@ -100,7 +143,10 @@ describe('Friends (e2e)', () => {
     ).expect(200);
     expect(stillIncoming.body.items).toHaveLength(0);
 
-    const res = await auth(request(server()).post('/friends/requests'), userC.accessToken)
+    const res = await auth(
+      request(server()).post('/friends/requests'),
+      userC.accessToken,
+    )
       .send({ username: userA.username })
       .expect(400);
     expect(res.body.error.code).toBe('REQUEST_NOT_ALLOWED');

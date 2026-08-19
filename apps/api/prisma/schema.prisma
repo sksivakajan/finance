@@ -1,8 +1,9 @@
-// Phase 1 + Phase 2 subset of docs/BLUEPRINT.md §6. Auth, profile, personal
-// finance, loans, scheduled payments, notifications, audit logging (Phase 1),
-// plus friends/blocking and direct-message chat (Phase 2) are migrated now.
-// Group/shared-expense/settlement models are added when Phase 3 begins, per
-// docs/BLUEPRINT.md §16.
+// Phase 1 + 2 + 3 subset of docs/BLUEPRINT.md §6. Auth, profile, personal
+// finance, loans, scheduled payments, notifications, audit logging (Phase 1);
+// friends/blocking and direct-message chat (Phase 2); shared expenses,
+// splitting, groups, money requests, and settlements (Phase 3) are all
+// migrated now. See §19/§20 for what each phase deliberately narrowed from
+// this file's original stub.
 
 generator client {
   provider     = "prisma-client"
@@ -34,7 +35,9 @@ model User {
   twoFactor         TwoFactorSecret?
   categories          Category[]
   incomes             Income[]
-  expenses            Expense[]
+  expensesOwned       Expense[]            @relation("ExpenseOwner")
+  expensesPaid        Expense[]            @relation("ExpensePayer")
+  expenseParticipations ExpenseParticipant[]
   loans               Loan[]
   scheduledPayments   ScheduledPayment[]
   notifications       Notification[]
@@ -49,6 +52,12 @@ model User {
   conversationMembers ConversationMember[]
   messages            Message[]
   messageReactions    MessageReaction[]
+  groupMemberships    GroupMember[]
+  groupsCreated       Group[]
+  moneyRequestsSent   MoneyRequest[]       @relation("MoneyRequestSender")
+  moneyRequestsRecv   MoneyRequest[]       @relation("MoneyRequestReceiver")
+  settlementsPaid     Settlement[]         @relation("SettlementPayer")
+  settlementsRecv     Settlement[]         @relation("SettlementReceiver")
 
   @@index([username])
 }
@@ -175,29 +184,189 @@ model Income {
   @@index([userId, date])
 }
 
-// Personal-only in Phase 1: every expense belongs to and was paid by its owner.
-// Splitting, participants, and group linkage arrive in the Phase 3 migration.
+// ownerId = whose books this shows up in; payerId = who actually paid (equal
+// for a personal expense, may differ once shared — e.g. a friend paid but you
+// recorded and split it). splitMethod=NONE means "purely personal", the same
+// meaning it had before Phase 3: no participants/splits rows exist for it.
 model Expense {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-  amountMinor   BigInt
-  currency      String
-  categoryId    String?
-  category      Category? @relation(fields: [categoryId], references: [id])
-  merchant      String?
-  description   String?
-  date          DateTime
-  paymentMethod String?
-  attachmentUrl String?
-  notes         String?
-  isRecurring   Boolean   @default(false)
+  id             String      @id @default(cuid())
+  ownerId        String
+  owner          User        @relation("ExpenseOwner", fields: [ownerId], references: [id])
+  payerId        String
+  payer          User        @relation("ExpensePayer", fields: [payerId], references: [id])
+  amountMinor    BigInt
+  currency       String
+  categoryId     String?
+  category       Category?   @relation(fields: [categoryId], references: [id])
+  merchant       String?
+  description    String?
+  date           DateTime
+  paymentMethod  String?
+  attachmentUrl  String?
+  notes          String?
+  isRecurring    Boolean     @default(false)
   recurrenceRule String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  splitMethod    SplitMethod @default(NONE)
+  visibility     Visibility  @default(PRIVATE)
+  groupId        String?
+  group          Group?      @relation(fields: [groupId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  deletedAt      DateTime?
 
-  @@index([userId, date])
+  participants ExpenseParticipant[]
+  splits       ExpenseSplit[]
+
+  @@index([ownerId, date])
+  @@index([payerId])
+  @@index([groupId])
+}
+
+enum SplitMethod {
+  NONE
+  EQUAL
+  EXACT
+  PERCENTAGE
+  SHARES
+}
+
+// Item-based splitting (receipt line items) is deferred — see §20 — so this
+// only covers PRIVATE/PARTICIPANTS_ONLY/SHARED_WITH_GROUP in practice today;
+// SHARED_WITH_USERS is kept per the original blueprint stub as a reserved
+// future extension point (an explicit allow-list independent of participants
+// or group membership), not read by any code path yet.
+enum Visibility {
+  PRIVATE
+  SHARED_WITH_USERS
+  SHARED_WITH_GROUP
+  PARTICIPANTS_ONLY
+}
+
+model ExpenseParticipant {
+  id        String  @id @default(cuid())
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+}
+
+// One immutable row per participant: their computed owed share for this
+// expense. This is the ledger leaf-level fact the balance engine reads —
+// never overwritten in place; editing a shared expense's split replaces
+// these rows inside a transaction (old rows deleted, new rows created,
+// covered by the same audit log entry), so a balance is always a pure
+// function of current rows, never a value that can drift from reality.
+model ExpenseSplit {
+  id            String   @id @default(cuid())
+  expenseId     String
+  expense       Expense  @relation(fields: [expenseId], references: [id])
+  userId        String
+  shareMinor    BigInt
+  percentageBps Int?
+  shareUnits    Int?
+  createdAt     DateTime @default(now())
+
+  @@unique([expenseId, userId])
+}
+
+// ---------- GROUPS ----------
+//
+// A group is a named container for shared expenses among its members. Group
+// chat (a dedicated Conversation per group) is deferred — see §20 — a group
+// today is a financial construct, not yet a messaging one.
+
+model Group {
+  id          String    @id @default(cuid())
+  name        String
+  avatarUrl   String?
+  createdById String
+  createdAt   DateTime  @default(now())
+  archivedAt  DateTime?
+
+  createdBy User          @relation(fields: [createdById], references: [id])
+  members   GroupMember[]
+  expenses  Expense[]
+}
+
+model GroupMember {
+  id       String    @id @default(cuid())
+  groupId  String
+  group    Group     @relation(fields: [groupId], references: [id])
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  @@unique([groupId, userId])
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+}
+
+// ---------- MONEY REQUESTS / SETTLEMENTS ----------
+
+model MoneyRequest {
+  id                String             @id @default(cuid())
+  senderId          String
+  sender            User               @relation("MoneyRequestSender", fields: [senderId], references: [id])
+  receiverId        String
+  receiver          User               @relation("MoneyRequestReceiver", fields: [receiverId], references: [id])
+  amountMinor       BigInt
+  currency          String
+  reason            String
+  dueDate           DateTime?
+  relatedExpenseId  String?
+  status            MoneyRequestStatus @default(PENDING)
+  createdAt         DateTime           @default(now())
+  respondedAt       DateTime?
+  deletedAt         DateTime?
+
+  @@index([receiverId, status])
+  @@index([senderId, status])
+}
+
+enum MoneyRequestStatus {
+  PENDING
+  PAID
+  DECLINED
+  CANCELLED
+}
+
+// A settlement is a financial event between two users, independent of any
+// single expense. It never mutates past Expense/ExpenseSplit rows — recording
+// one just adds another event to the ledger the balance engine sums over.
+model Settlement {
+  id          String   @id @default(cuid())
+  payerId     String
+  payer       User     @relation("SettlementPayer", fields: [payerId], references: [id])
+  receiverId  String
+  receiver    User     @relation("SettlementReceiver", fields: [receiverId], references: [id])
+  amountMinor BigInt
+  currency    String
+  method      String?
+  reference   String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  items SettlementItem[]
+
+  @@index([payerId, receiverId])
+}
+
+/// Which specific expenses a settlement is allocated against, for
+/// traceability ("this payment cleared the dinner + coffee tabs"). Optional —
+/// a settlement can be recorded with no allocation at all.
+model SettlementItem {
+  id             String     @id @default(cuid())
+  settlementId   String
+  settlement     Settlement @relation(fields: [settlementId], references: [id])
+  expenseId      String?
+  allocatedMinor BigInt
 }
 
 // ---------- LOANS ----------

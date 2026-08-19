@@ -33,6 +33,18 @@ export class ExpenseController {
     return this.expenses.list(user.sub, parsePagination({ cursor, limit }));
   }
 
+  @Get('shared-with-me')
+  listSharedWithMe(
+    @CurrentUser() user: AccessTokenPayload,
+    @Query('cursor') cursor?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.expenses.listSharedWithMe(
+      user.sub,
+      parsePagination({ cursor, limit }),
+    );
+  }
+
   @Get(':id')
   get(@CurrentUser() user: AccessTokenPayload, @Param('id') id: string) {
     return this.expenses.get(user.sub, id);

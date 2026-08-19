@@ -1373,6 +1373,65 @@ only earns its keep once a later phase needs it:
 
 ---
 
+## 20. Phase 3 Implementation Notes (2026-08-19)
+
+Shipped: shared expenses with all four non-itemized split methods (equal,
+exact, percentage, shares — the split-engine math lives in
+`packages/shared/src/split-engine.ts`, framework-agnostic and unit-tested
+against the mandatory cases from §17: remainder distribution, largest-remainder
+rounding, exact-amount mismatch rejection), groups (named containers for
+shared expenses among friends), money requests (ask a friend to pay you, they
+pay or decline), settlements (record a real payment either direction), the
+interpersonal balance engine (`GET /balances`, `/balances/:friendId`, derived
+per §10's signed-sum formula, never a stored/cached number), and debt
+simplification (`GET /balances/optimize?groupId=`, the greedy largest-creditor/
+largest-debtor match from §12).
+
+`Expense.userId` was renamed to `ownerId` with a new `payerId` (equal to
+`ownerId` for every pre-Phase-3 row — a hand-written migration, not Prisma's
+default drop+recreate, so the rename didn't lose the 5 real rows already in
+the dev database). `splitMethod=NONE` keeps behaving exactly as it did in
+Phase 1: personal, `visibility=PRIVATE`, no participant/split rows.
+
+A real bug worth recording: the first version of group balances/optimize
+included *every* Settlement between two group members, not just settlements
+related to that group's expenses — so a friend-to-friend settlement for an
+unrelated direct expense silently zeroed out debt inside a group's balance
+too. Fixed by dropping settlements from the group-scoped views entirely (see
+the doc comment on `BalanceService.groupBalances`): a `Settlement` has no
+group of its own — only an optional per-expense `SettlementItem` allocation
+(see below) — so there's no reliable way to attribute a settlement to "this
+group's tab" without it. The interpersonal `/balances` endpoints are unaffected
+(they correctly net every expense and settlement between exactly two people,
+group-originated or not).
+
+Deliberate scope reductions, same rationale as §19 — the missing piece only
+earns its keep once something later actually needs it:
+- **No itemized (`ITEMS`) splitting.** Receipt-line-item assignment
+  (`ExpenseItem`/`ExpenseItemAssignment` from the original §6 stub) needs its
+  own UI for assigning individual items to people and wasn't built; `SplitMethod`
+  only has `NONE`/`EQUAL`/`EXACT`/`PERCENTAGE`/`SHARES`.
+- **`SettlementItem` allocation isn't wired up.** The model exists (per-expense
+  traceability — "this payment cleared the dinner + coffee tabs") but
+  `SettlementService.create` never writes one; every settlement is currently
+  unallocated. This is also *why* group balances can't net settlements (above).
+- **No group chat.** `Group` has no `Conversation` — group membership is a
+  financial construct only this phase, consistent with Phase 2 also shipping
+  DIRECT-only conversations.
+- **`GroupRole` dropped `ADMIN`.** Only `OWNER`/`MEMBER` — the owner is the
+  sole admin-equivalent (can remove members, cannot be removed themselves;
+  archiving an owner-less group is the escape hatch, not a role transfer,
+  which also isn't built).
+- **The general expense list stays owner-only.** `GET /expenses` is unchanged
+  from Phase 1; a participant's own shared expenses surface via
+  `GET /expenses/shared-with-me` and the Balances/Groups pages instead of
+  being interleaved into someone else's personal list.
+- **Editing a shared expense's split isn't exposed in the UI yet**, though the
+  API supports it (`PATCH /expenses/:id` replaces splits when `splitMethod` is
+  resent) — the Expenses page's edit form only re-opens the plain fields.
+
+---
+
 **Next step**: blueprint approved with the decisions above. Beginning Phase 1,
 Step 1 (pnpm workspace scaffold + Docker environment for Postgres/Redis) as the
 first concrete implementation increment.

@@ -8,3 +8,7 @@ export * from "./scheduled-payment.js";
 export * from "./loan.js";
 export * from "./friend.js";
 export * from "./chat.js";
+export * from "./split-engine.js";
+export * from "./group.js";
+export * from "./money-request.js";
+export * from "./settlement.js";
