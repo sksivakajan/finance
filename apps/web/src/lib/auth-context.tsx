@@ -8,6 +8,12 @@ import type { PublicUser } from "./types";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
+// Auto-logout after this long with no interaction anywhere in the app --
+// a finance app left open and untouched shouldn't stay signed in
+// indefinitely. Resets on any of the activity events below.
+const IDLE_LOGOUT_MS = 60_000;
+const ACTIVITY_EVENTS = ["mousedown", "mousemove", "keydown", "wheel", "touchstart", "scroll"] as const;
+
 interface AuthContextValue {
   user: PublicUser | null;
   status: AuthStatus;
@@ -70,6 +76,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setStatus("unauthenticated");
     }
   }, []);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const resetIdleTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => void logout(), IDLE_LOGOUT_MS);
+    };
+
+    resetIdleTimer();
+    for (const event of ACTIVITY_EVENTS) {
+      window.addEventListener(event, resetIdleTimer, { passive: true });
+    }
+
+    return () => {
+      clearTimeout(timeoutId);
+      for (const event of ACTIVITY_EVENTS) {
+        window.removeEventListener(event, resetIdleTimer);
+      }
+    };
+  }, [status, logout]);
 
   return (
     <AuthContext.Provider value={{ user, status, login, logout, refreshUser }}>{children}</AuthContext.Provider>
