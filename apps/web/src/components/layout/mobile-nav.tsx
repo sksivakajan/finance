@@ -1,54 +1,158 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
+import { useAuth } from "@/lib/auth-context";
 import { useUnreadNotificationCount } from "@/lib/hooks/use-notifications";
+import { HomeIcon, ChatBubbleIcon, LogoutIcon } from "./icons";
+import {
+  TrendUpIcon,
+  WalletIcon,
+  BanknoteIcon,
+  CalendarIcon,
+  UsersIcon,
+  UserIcon,
+  BuildingIcon,
+  MoreVerticalIcon,
+  GearIcon,
+} from "@/components/dashboard/icons";
 
-// Icon-only tabs on mobile: 7 items with text labels don't fit a small
-// viewport without clipping the last one off-screen (found via a real
-// browser check at 390px wide). Icons + aria-label keep it compact and
-// accessible instead of shrinking text to the point of being unreadable.
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Home", icon: "🏠" },
-  { href: "/income", label: "Income", icon: "💰" },
-  { href: "/expenses", label: "Expenses", icon: "🧾" },
-  { href: "/scheduled-payments", label: "Upcoming", icon: "⏰" },
-  { href: "/loans", label: "Loans", icon: "🏦" },
-  { href: "/forecast", label: "Forecast", icon: "📈" },
-  { href: "/balances", label: "Balances", icon: "⚖️" },
-  { href: "/groups", label: "Groups", icon: "🧑‍🤝‍🧑" },
-  { href: "/friends", label: "Friends", icon: "👥" },
-  { href: "/chat", label: "Chat", icon: "💬" },
+const TABS = [
+  { href: "/dashboard", label: "Home", icon: HomeIcon },
+  { href: "/income", label: "Income", icon: TrendUpIcon },
+  { href: "/expenses", label: "Expenses", icon: WalletIcon },
+  { href: "/loans", label: "Loans", icon: BanknoteIcon },
 ];
+
+const MORE_ITEMS = [
+  { href: "/scheduled-payments", label: "Scheduled Payments", icon: CalendarIcon },
+  { href: "/forecast", label: "Forecast", icon: TrendUpIcon },
+  { href: "/balances", label: "Balances", icon: BuildingIcon },
+  { href: "/groups", label: "Groups", icon: UsersIcon },
+  { href: "/friends", label: "Friends", icon: UserIcon },
+  { href: "/chat", label: "Chat", icon: ChatBubbleIcon },
+  { href: "/settings", label: "Settings", icon: GearIcon },
+];
+
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
   const { data: unread } = useUnreadNotificationCount();
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  const displayName = user?.profile?.displayName || user?.usernameDisplay || "";
+  const initial = displayName.charAt(0).toUpperCase() || "?";
+
+  const moreActive = MORE_ITEMS.some((item) => isActive(pathname, item.href));
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 flex border-t border-slate-200 bg-white md:hidden">
-      {NAV_ITEMS.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-label={item.label}
-            className={cn(
-              "relative flex flex-1 flex-col items-center gap-0.5 py-2 text-lg",
-              active ? "text-indigo-600" : "text-slate-500",
-            )}
-          >
-            <span aria-hidden="true">{item.icon}</span>
-            {item.href === "/chat" && unread && unread.count > 0 && (
-              <span className="absolute right-3 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                {unread.count > 9 ? "9+" : unread.count}
-              </span>
-            )}
-          </Link>
-        );
-      })}
-    </nav>
+    <>
+      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] md:hidden">
+        {TABS.map((item) => {
+          const active = isActive(pathname, item.href);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
+                active ? "text-indigo-600" : "text-slate-500",
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setMoreOpen(true)}
+          className={cn(
+            "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] font-medium",
+            moreActive ? "text-indigo-600" : "text-slate-500",
+          )}
+        >
+          <MoreVerticalIcon className="h-5 w-5" />
+          More
+          {unread && unread.count > 0 && (
+            <span className="absolute right-1/4 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+              {unread.count > 9 ? "9+" : unread.count}
+            </span>
+          )}
+        </button>
+      </nav>
+
+      {moreOpen && (
+        <div className="fixed inset-0 z-30 md:hidden">
+          <button
+            type="button"
+            aria-label="Close menu"
+            className="absolute inset-0 bg-slate-900/40"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 rounded-t-2xl bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-xl">
+            <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-slate-200" />
+            <p className="mb-2 px-1 text-sm font-semibold text-slate-900">More</p>
+            <div className="grid grid-cols-3 gap-3">
+              {MORE_ITEMS.map((item) => {
+                const active = isActive(pathname, item.href);
+                const Icon = item.icon;
+                const showBadge = item.href === "/chat" && unread && unread.count > 0;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMoreOpen(false)}
+                    className={cn(
+                      "relative flex flex-col items-center gap-1.5 rounded-xl px-2 py-3 text-center text-xs font-medium",
+                      active ? "bg-indigo-50 text-indigo-600" : "text-slate-600 hover:bg-slate-50",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                    {showBadge && (
+                      <span className="absolute right-3 top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                        {unread.count > 9 ? "9+" : unread.count}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex items-center gap-3 border-t border-slate-100 pt-4">
+              <Link
+                href="/settings"
+                onClick={() => setMoreOpen(false)}
+                className="flex min-w-0 flex-1 items-center gap-3"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-sm font-semibold text-white">
+                  {initial}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
+                  <p className="truncate text-xs text-slate-500">@{user?.usernameDisplay}</p>
+                </div>
+              </Link>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50 hover:text-red-600"
+              >
+                <LogoutIcon className="h-4 w-4" />
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

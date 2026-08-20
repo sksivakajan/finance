@@ -24,6 +24,24 @@ export interface PublicUser {
   profile: PublicProfile | null;
 }
 
+export interface SessionRecord {
+  id: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  createdAt: string;
+  lastUsedAt: string;
+  isCurrent: boolean;
+}
+
+export interface TwoFactorEnrollment {
+  otpauthUri: string;
+  qrCodeDataUrl: string;
+}
+
+export interface TwoFactorConfirmResult {
+  recoveryCodes: string[];
+}
+
 export interface Category {
   id: string;
   userId: string;

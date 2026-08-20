@@ -6,26 +6,24 @@ import { useRouter } from "next/navigation";
 import { useAuth, ApiError } from "@/lib/auth-context";
 import { api } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ErrorText } from "@/components/ui/error-text";
+import { AuthShell } from "@/components/auth/shell";
+import { AuthField } from "@/components/auth/field";
+import { AuthIllustration } from "@/components/auth/illustration";
 import {
-  UserIcon,
-  LockIcon,
   EyeIcon,
   EyeOffIcon,
+  EnvelopeIcon,
+  LockIcon,
+  ShieldCheckIcon,
+  ShieldIcon,
+  ArrowRightIcon,
   ChartIcon,
   UsersIcon,
   ChatIcon,
   DollarIcon,
   TrendUpIcon,
-  ShieldIcon,
-  GlobeIcon,
-  ChevronDownIcon,
-  GoogleLogo,
-  AppleLogo,
-  FacebookLogo,
-} from "./icons";
+  UserIcon,
+} from "@/components/auth/icons";
 
 const REMEMBERED_EMAIL_KEY = "finance:rememberedEmail";
 
@@ -104,7 +102,6 @@ export default function LoginPage() {
   const [needsVerification, setNeedsVerification] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent">("idle");
-  const [socialNotice, setSocialNotice] = useState<string | null>(null);
 
   useEffect(() => {
     // Deliberately an effect, not a lazy useState initializer: localStorage
@@ -159,208 +156,196 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <div className="flex min-h-screen w-full bg-[#eef0fc] p-0 lg:items-center lg:justify-center lg:p-6">
-      <div className="flex min-h-screen w-full max-w-6xl overflow-hidden bg-white lg:min-h-0 lg:rounded-[2rem] lg:shadow-2xl">
-        {/* Left showcase panel */}
-        <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-900 p-10 text-white lg:flex xl:p-12">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-lg font-bold text-indigo-700 shadow-lg">
-                F
-              </span>
-              <div>
-                <p className="text-lg font-semibold">FinConnect</p>
-                <p className="text-xs text-white/60">Manage. Share. Grow.</p>
-              </div>
-            </div>
+  function renderFormFields(idPrefix: string) {
+    return (
+    <>
+      <AuthField
+        id={`${idPrefix}-email`}
+        label="Email address"
+        icon={EnvelopeIcon}
+        type="email"
+        autoComplete="email"
+        placeholder="Enter your email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <AuthField
+        id={`${idPrefix}-password`}
+        label="Password"
+        icon={LockIcon}
+        type={showPassword ? "text" : "password"}
+        autoComplete="current-password"
+        placeholder="Enter your password"
+        required
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        rightSlot={
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="text-white/40 hover:text-white/70 lg:text-slate-400 lg:hover:text-slate-600"
+          >
+            {showPassword ? <EyeOffIcon className="h-4.5 w-4.5" /> : <EyeIcon className="h-4.5 w-4.5" />}
+          </button>
+        }
+      />
 
-            <h1 className="mt-10 text-4xl font-bold leading-tight xl:text-[2.75rem]">
-              Your finance,
-              <br />
-              <span className="bg-gradient-to-r from-indigo-300 to-fuchsia-300 bg-clip-text text-transparent">
-                connected.
-              </span>
-            </h1>
-            <p className="mt-4 max-w-sm text-sm text-white/70">
-              Track your income and expenses, manage loans, split bills, and stay connected with friends.
-            </p>
+      {needsTwoFactor && (
+        <AuthField
+          id={`${idPrefix}-code`}
+          label="Two-factor code"
+          icon={ShieldCheckIcon}
+          autoComplete="one-time-code"
+          placeholder="6-digit code or recovery code"
+          required
+          value={twoFactorCode}
+          onChange={(e) => setTwoFactorCode(e.target.value)}
+        />
+      )}
 
-            <ul className="mt-8 space-y-4">
-              {FEATURES.map((f) => (
-                <li key={f.title} className="flex items-start gap-3">
-                  <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${f.iconBg} text-white`}>
-                    <f.icon className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">{f.title}</p>
-                    <p className="text-xs text-white/60">{f.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <div className="flex items-center justify-between text-sm">
+        <label className="flex items-center gap-2 text-white/60 lg:text-slate-600">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500/40 lg:border-slate-300 lg:bg-white lg:text-indigo-600 lg:focus:ring-indigo-500/30"
+          />
+          Remember me
+        </label>
+        <Link
+          href="/forgot-password"
+          className="font-medium text-indigo-300 hover:text-indigo-200 lg:text-indigo-600 lg:hover:text-indigo-500"
+        >
+          Forgot password?
+        </Link>
+      </div>
 
-          <BalanceIllustration />
-
-          <div className="flex items-center gap-2 text-xs text-white/50">
-            <ShieldIcon className="h-4 w-4" />
-            Your data is encrypted and always private.
-          </div>
-        </div>
-
-        {/* Right form panel */}
-        <div className="flex w-full flex-col justify-center px-6 py-10 sm:px-10 md:px-14 lg:w-1/2 lg:px-16">
-          <div className="mb-8 flex items-center justify-between lg:justify-end">
-            <div className="flex items-center gap-2 lg:hidden">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
-                F
-              </span>
-              <span className="text-sm font-semibold text-slate-900">FinConnect</span>
-            </div>
+      {needsVerification && (
+        <p className="text-sm text-amber-300 lg:text-amber-700">
+          Please verify your email before logging in.{" "}
+          {resendStatus === "sent" ? (
+            "New link sent — check your inbox."
+          ) : (
             <button
               type="button"
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              onClick={handleResend}
+              disabled={resendStatus === "sending"}
+              className="font-medium underline disabled:opacity-60"
             >
-              <GlobeIcon className="h-3.5 w-3.5" />
-              English
-              <ChevronDownIcon className="h-3.5 w-3.5" />
+              Resend verification email
             </button>
-          </div>
+          )}
+        </p>
+      )}
+      {error && (
+        <p className="text-sm text-red-400 lg:text-red-600" role="alert">
+          {error}
+        </p>
+      )}
 
-          <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Welcome back</h2>
-          <p className="mt-1.5 text-sm text-slate-500">Login to continue to your account</p>
+      <Button
+        type="submit"
+        isLoading={isSubmitting}
+        className="w-full gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-base hover:from-indigo-500 hover:to-purple-500"
+      >
+        Login
+        <ArrowRightIcon className="h-4 w-4" />
+      </Button>
+    </>
+    );
+  }
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <div className="relative">
-                <UserIcon className="pointer-events-none absolute left-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Enter your email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <LockIcon className="pointer-events-none absolute left-3 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-slate-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  {showPassword ? <EyeOffIcon className="h-4.5 w-4.5" /> : <EyeIcon className="h-4.5 w-4.5" />}
-                </button>
-              </div>
-            </div>
+  return (
+    <div>
+      {/* Mobile / tablet: dark single-card layout */}
+      <div className="lg:hidden">
+        <AuthShell>
+          <AuthIllustration icon={ShieldCheckIcon} ring />
+          <h1 className="text-center text-2xl font-bold text-white">Welcome back</h1>
+          <p className="mt-1.5 text-center text-sm text-white/50">Login to continue to your account</p>
 
-            {needsTwoFactor && (
-              <div>
-                <Label htmlFor="code">Two-factor code</Label>
-                <Input
-                  id="code"
-                  autoComplete="one-time-code"
-                  placeholder="6-digit code or recovery code"
-                  required
-                  value={twoFactorCode}
-                  onChange={(e) => setTwoFactorCode(e.target.value)}
-                />
-              </div>
-            )}
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                Remember me
-              </label>
-              <Link href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot password?
-              </Link>
-            </div>
-
-            {needsVerification && (
-              <p className="text-sm text-amber-700">
-                Please verify your email before logging in.{" "}
-                {resendStatus === "sent" ? (
-                  "New link sent — check your inbox."
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResend}
-                    disabled={resendStatus === "sending"}
-                    className="font-medium underline disabled:opacity-60"
-                  >
-                    Resend verification email
-                  </button>
-                )}
-              </p>
-            )}
-            <ErrorText>{error}</ErrorText>
-
-            <Button
-              type="submit"
-              isLoading={isSubmitting}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-3 text-base hover:from-indigo-500 hover:to-purple-500"
-            >
-              Login
-            </Button>
+          <form onSubmit={handleSubmit} className="mt-7 space-y-4" noValidate>
+            {renderFormFields("m")}
           </form>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-slate-200" />
-            <span className="text-xs text-slate-400">or continue with</span>
-            <div className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: "Google", icon: GoogleLogo },
-              { label: "Apple", icon: AppleLogo },
-              { label: "Facebook", icon: FacebookLogo },
-            ].map((provider) => (
-              <button
-                key={provider.label}
-                type="button"
-                onClick={() => setSocialNotice(`Signing in with ${provider.label} isn't available yet.`)}
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-              >
-                <provider.icon className="text-slate-900" />
-                <span className="hidden sm:inline">{provider.label}</span>
-              </button>
-            ))}
-          </div>
-          {socialNotice && <p className="mt-3 text-center text-xs text-slate-500">{socialNotice}</p>}
-
-          <p className="mt-8 text-center text-sm text-slate-500">
+          <p className="mt-7 text-center text-sm text-white/50">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link href="/register" className="font-medium text-indigo-300 hover:text-indigo-200">
               Sign up
             </Link>
           </p>
+        </AuthShell>
+      </div>
+
+      {/* Desktop: split showcase + form panel */}
+      <div className="hidden min-h-screen w-full bg-[#eef0fc] lg:flex lg:items-center lg:justify-center lg:p-6">
+        <div className="flex w-full max-w-6xl overflow-hidden bg-white lg:rounded-[2rem] lg:shadow-2xl">
+          <div className="relative flex w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-900 p-10 text-white xl:p-12">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-lg font-bold text-indigo-700 shadow-lg">
+                  F
+                </span>
+                <div>
+                  <p className="text-lg font-semibold">Finance</p>
+                  <p className="text-xs text-white/60">Manage. Share. Grow.</p>
+                </div>
+              </div>
+
+              <h1 className="mt-10 text-4xl font-bold leading-tight xl:text-[2.75rem]">
+                Your finance,
+                <br />
+                <span className="bg-gradient-to-r from-indigo-300 to-fuchsia-300 bg-clip-text text-transparent">
+                  connected.
+                </span>
+              </h1>
+              <p className="mt-4 max-w-sm text-sm text-white/70">
+                Track your income and expenses, manage loans, split bills, and stay connected with friends.
+              </p>
+
+              <ul className="mt-8 space-y-4">
+                {FEATURES.map((f) => (
+                  <li key={f.title} className="flex items-start gap-3">
+                    <span
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${f.iconBg} text-white`}
+                    >
+                      <f.icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold">{f.title}</p>
+                      <p className="text-xs text-white/60">{f.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <BalanceIllustration />
+
+            <div className="flex items-center gap-2 text-xs text-white/50">
+              <ShieldIcon className="h-4 w-4" />
+              Your data is encrypted and always private.
+            </div>
+          </div>
+
+          <div className="flex w-1/2 flex-col justify-center px-10 py-10 xl:px-16">
+            <h2 className="text-2xl font-bold text-slate-900 sm:text-3xl">Welcome back</h2>
+            <p className="mt-1.5 text-sm text-slate-500">Login to continue to your account</p>
+
+            <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
+              {renderFormFields("d")}
+            </form>
+
+            <p className="mt-8 text-center text-sm text-slate-500">
+              Don&apos;t have an account?{" "}
+              <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Sign up
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

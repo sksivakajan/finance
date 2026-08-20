@@ -268,6 +268,18 @@ export function LockIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+export function PaperclipIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M18.375 12.739 10.5 20.614a4.5 4.5 0 1 1-6.364-6.364l7.693-7.693a3 3 0 1 1 4.243 4.243l-7.673 7.673a1.5 1.5 0 0 1-2.122-2.121l7.073-7.073"
+      />
+    </svg>
+  );
+}
+
 export function EyeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg {...base(props)}>
@@ -277,6 +289,131 @@ export function EyeIcon(props: React.SVGProps<SVGSVGElement>) {
         d="M2.25 12S5.25 5.25 12 5.25 21.75 12 21.75 12 18.75 18.75 12 18.75 2.25 12 2.25 12Z"
       />
       <circle cx="12" cy="12" r="2.75" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function BellIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M14.857 17.082a23.85 23.85 0 0 0 5.454-1.31A8.97 8.97 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.97 8.97 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.26 24.26 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+      />
+    </svg>
+  );
+}
+
+export function ShieldIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 2.25 4.5 5.25v6c0 5.056 3.24 8.94 7.5 10.5 4.26-1.56 7.5-5.444 7.5-10.5v-6L12 2.25Z"
+      />
+    </svg>
+  );
+}
+
+export function PaletteIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 3a9 9 0 1 0 0 18c1.104 0 1.5-.75 1.5-1.5 0-.414-.168-.79-.44-1.06a1.5 1.5 0 0 1 1.06-2.56h1.63A3.75 3.75 0 0 0 19.5 12 9 9 0 0 0 12 3Z"
+      />
+      <circle cx="7.5" cy="10.5" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="11.5" cy="7" r="1.25" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="9.5" r="1.25" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function LinkIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9 15 15 9m-4.5-3 1.72-1.72a3.75 3.75 0 1 1 5.3 5.3L15.75 11.25M13.5 19.5l-1.72 1.72a3.75 3.75 0 1 1-5.3-5.3L8.25 14.25"
+      />
+    </svg>
+  );
+}
+
+export function CreditCardIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <rect x="2.25" y="5.25" width="19.5" height="13.5" rx="2.25" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 9.75h19.5M5.25 14.75h4.5" />
+    </svg>
+  );
+}
+
+export function DatabaseIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 6c4.556 0 8.25-1.007 8.25-2.25S16.556 1.5 12 1.5 3.75 2.507 3.75 3.75 7.444 6 12 6Z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 3.75v6c0 1.243 3.694 2.25 8.25 2.25s8.25-1.007 8.25-2.25v-6M3.75 9.75v6c0 1.243 3.694 2.25 8.25 2.25s8.25-1.007 8.25-2.25v-6M3.75 15.75v4.5c0 1.243 3.694 2.25 8.25 2.25s8.25-1.007 8.25-2.25v-4.5"
+      />
+    </svg>
+  );
+}
+
+export function HelpCircleIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="8.25" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.29c-.66.3-1 .95-1 1.71v.25"
+      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 17h.008v.008H12V17Z" />
+    </svg>
+  );
+}
+
+export function CameraIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.5 8.25A1.5 1.5 0 0 1 6 6.75h1.379a1.5 1.5 0 0 0 1.06-.44l1.122-1.12a1.5 1.5 0 0 1 1.061-.44h2.756a1.5 1.5 0 0 1 1.06.44l1.122 1.12a1.5 1.5 0 0 0 1.061.44H18a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5v-9Z"
+      />
+      <circle cx="12" cy="12.75" r="3.25" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function GearIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065Z"
+      />
+      <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
   );
 }

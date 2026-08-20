@@ -8,6 +8,7 @@ import { useBalanceHistory, useCashFlow, useCategoryBreakdown } from "@/lib/hook
 import { useBalances } from "@/lib/hooks/use-balances";
 import { formatMoney } from "@/lib/money";
 import { SummaryCard } from "@/components/ui/summary-card";
+import { MobileHeader } from "@/components/layout/mobile-header";
 import { CashFlowChart } from "@/components/dashboard/cash-flow-chart";
 import { CategoryList } from "@/components/dashboard/category-list";
 import { FriendsBalanceList } from "@/components/dashboard/friends-balance-list";
@@ -79,7 +80,15 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
+      <MobileHeader
+        title={
+          <>
+            {greeting}, {user?.profile?.displayName} <span aria-hidden="true">👋</span>
+          </>
+        }
+        subtitle="Here's what's happening with your finances today."
+      />
+      <div className="hidden md:block">
         <h1 className="text-xl font-semibold text-slate-900">
           {greeting}, {user?.profile?.displayName} <span aria-hidden="true">👋</span>
         </h1>

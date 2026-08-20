@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateLoanRequest, CreateLoanPaymentRequest } from "@finance/shared";
+import type { CreateLoanRequest, CreateLoanPaymentRequest, UpdateLoanInput } from "@finance/shared";
 import { api } from "../api-client";
 import type { LoanRecord } from "../types";
 
@@ -14,6 +14,17 @@ export function useCreateLoan() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateLoanRequest) => api.post<LoanRecord>("/loans", input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["loans"] });
+      void queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
+  });
+}
+
+export function useUpdateLoan() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateLoanInput }) => api.patch<LoanRecord>(`/loans/${id}`, input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["loans"] });
       void queryClient.invalidateQueries({ queryKey: ["dashboard"] });

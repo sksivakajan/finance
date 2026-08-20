@@ -1,0 +1,114 @@
+# Render Blueprint for FinConnect (finance-workspace).
+#
+# Deploys 4 services from this one repo:
+#   - finconnect-db     Postgres (free tier: deleted after 30 days of inactivity — fine to
+#                        start with, upgrade to a paid plan before this matters to you)
+#   - finconnect-redis   Key Value / Redis, used for rate limiting (free tier: 25MB, no
+#                        persistence, sleeps after 15 min idle — that's fine, it's disposable)
+#   - finconnect-api     NestJS API
+#   - finconnect-web     Next.js web app
+#
+# First-time setup: in the Render dashboard, "New" -> "Blueprint", point it at this repo.
+# You'll be prompted to fill in the `sync: false` vars below during that flow.
+#
+# Known limitation: uploaded files (avatars, receipts) are written to local disk
+# (STORAGE_LOCAL_PATH) and are NOT persisted across deploys/restarts on Render's free
+# instance type — there's no attached disk here. Fine for trying this out; before real
+# users rely on uploads, either attach a paid persistent disk to finconnect-api or move
+# storage to an S3-compatible bucket.
+
+databases:
+  - name: finconnect-db
+    plan: free
+    databaseName: finconnect
+    user: finconnect
+
+services:
+  - name: finconnect-redis
+    type: keyvalue
+    plan: free
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere (tighten later if you want)
+
+  - name: finconnect-api
+    type: web
+    runtime: node
+    plan: free
+    buildCommand: >-
+      corepack enable && corepack prepare pnpm@11.22.0 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm build:shared &&
+      pnpm --filter @finance/api build &&
+      pnpm --filter @finance/api run prisma:deploy
+    startCommand: pnpm --filter @finance/api start:prod
+    healthCheckPath: /health/db
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      # Render auto-injects PORT for web services; this override tells it to
+      # route to the port main.ts actually binds (API_PORT defaults to 4000,
+      # left unset here on purpose).
+      - key: PORT
+        value: "4000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: finconnect-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: finconnect-redis
+          type: keyvalue
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      # Must be exactly 64 lowercase hex chars (32 bytes). Generate one with:
+      #   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+      - key: TWO_FACTOR_ENCRYPTION_KEY
+        sync: false
+      # Render shows the finconnect-web service's onrender.com URL in the
+      # blueprint preview before you apply it — use that, with https://, e.g.
+      # https://finconnect-web.onrender.com (no trailing slash). If Render had
+      # to rename it due to a name clash, update this + WEB_ORIGIN afterward
+      # from the dashboard and redeploy.
+      - key: CORS_ORIGIN
+        sync: false
+      - key: WEB_ORIGIN
+        sync: false
+      # Emails (verification, password reset) just get logged to this
+      # service's Render logs by default -- fine for trying things out, but
+      # real users can't verify their account without a real inbox. Switch to
+      # smtp + set SMTP_HOST/SMTP_PORT/SMTP_USER/SMTP_PASS/MAIL_FROM on this
+      # service once you're ready (e.g. via Resend, SendGrid, Mailgun).
+      - key: EMAIL_DRIVER
+        value: console
+
+  - name: finconnect-web
+    type: web
+    runtime: node
+    plan: free
+    buildCommand: >-
+      corepack enable && corepack prepare pnpm@11.22.0 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm build:shared &&
+      pnpm --filter @finance/web build
+    startCommand: pnpm --filter @finance/web start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      # Browser calls stay same-origin (/api/*) and get proxied server-side to
+      # the API over Render's private network -- see next.config.ts. Keeps the
+      # sameSite=strict refresh cookie working with no CORS involved.
+      - key: NEXT_PUBLIC_API_URL
+        value: /api
+      - key: API_INTERNAL_URL
+        fromService:
+          name: finconnect-api
+          type: web
+          property: hostport

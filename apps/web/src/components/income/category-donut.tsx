@@ -57,15 +57,14 @@ export function CategoryDonut({ entries, currency }: { entries: CategoryBreakdow
         {entries.slice(0, 6).map((entry) => {
           const pct = Math.round((Number(entry.amountMinor) / total) * 100);
           return (
-            <li key={entry.categoryId} className="text-sm">
-              <div className="flex items-center gap-2">
+            <li key={entry.categoryId} className="flex items-center justify-between gap-3 text-sm">
+              <div className="flex min-w-0 items-center gap-2">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${paletteForKey(entry.categoryId).dot}`} />
                 <span className="min-w-0 truncate font-medium text-slate-900">{entry.name}</span>
               </div>
-              <div className="ml-[18px] flex items-center gap-1.5 text-xs text-slate-500">
-                <span>{pct}%</span>
-                <span aria-hidden="true">·</span>
-                <span className="tabular-nums">{formatMoney(entry.amountMinor, currency)}</span>
+              <div className="shrink-0 text-right">
+                <p className="tabular-nums font-medium text-slate-900">{formatMoney(entry.amountMinor, currency)}</p>
+                <p className="text-xs text-slate-500">{pct}%</p>
               </div>
             </li>
           );

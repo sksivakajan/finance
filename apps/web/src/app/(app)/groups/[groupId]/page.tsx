@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, type FormEvent } from "react";
+import { use, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -16,6 +16,8 @@ import { useFriendList } from "@/lib/hooks/use-friends";
 import { formatMoney, toMinorUnits } from "@/lib/money";
 import { ApiError } from "@/lib/api-client";
 import { emptySplitState, splitStateToRequestFields } from "@/lib/split";
+import { paletteForKey } from "@/lib/category-palette";
+import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +26,29 @@ import { Card, CardTitle } from "@/components/ui/card";
 import { ErrorText } from "@/components/ui/error-text";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
+import { SummaryCard } from "@/components/ui/summary-card";
 import { SplitEditor } from "@/components/finance/split-editor";
+import { UsersIcon } from "@/components/groups/icons";
+import { WalletIcon, ArrowDownIcon, ArrowUpIcon, PlusIcon, CalendarIcon, ChevronRightIcon } from "@/components/dashboard/icons";
+
+const ROW_TONES = [
+  { bg: "bg-violet-100", text: "text-violet-700" },
+  { bg: "bg-emerald-100", text: "text-emerald-700" },
+  { bg: "bg-amber-100", text: "text-amber-700" },
+  { bg: "bg-sky-100", text: "text-sky-700" },
+];
 
 function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function Avatar({ name, colorKey }: { name: string; colorKey: string }) {
+  const palette = paletteForKey(colorKey);
+  return (
+    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold", palette.chip)}>
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
 }
 
 export default function GroupDetailPage({ params }: { params: Promise<{ groupId: string }> }) {
@@ -44,6 +65,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
 
   const [addMemberId, setAddMemberId] = useState("");
   const [addMemberError, setAddMemberError] = useState<string | null>(null);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [showOptimize, setShowOptimize] = useState(false);
   const { data: optimize, isLoading: optimizeLoading } = useGroupOptimize(showOptimize ? groupId : null);
 
@@ -53,6 +75,20 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   const [date, setDate] = useState(todayIsoDate());
   const [splitState, setSplitState] = useState(emptySplitState);
   const [expenseError, setExpenseError] = useState<string | null>(null);
+
+  const totals = useMemo(() => {
+    let owedMinor = 0;
+    let oweMinor = 0;
+    for (const row of groupBalances?.items ?? []) {
+      for (const b of row.balances) {
+        const net = Number(b.netMinor);
+        if (net > 0) owedMinor += net;
+        else oweMinor += -net;
+      }
+    }
+    const totalExpensesMinor = (expenses?.items ?? []).reduce((sum, e) => sum + Number(e.amountMinor), 0);
+    return { owedMinor, oweMinor, totalExpensesMinor };
+  }, [groupBalances, expenses]);
 
   if (isLoading) {
     return (
@@ -68,10 +104,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         <Link href="/groups" className="text-sm font-medium text-slate-500 hover:text-slate-700">
           ← Back to groups
         </Link>
-        <EmptyState
-          title="Group not found"
-          description="This group doesn't exist, or you're not a member of it."
-        />
+        <EmptyState title="Group not found" description="This group doesn't exist, or you're not a member of it." />
       </div>
     );
   }
@@ -84,6 +117,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
     displayName: m.displayName,
     avatarUrl: m.avatarUrl,
   }));
+  const palette = paletteForKey(group.id);
 
   async function handleAddMember(e: FormEvent) {
     e.preventDefault();
@@ -91,6 +125,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
     try {
       await addMember.mutateAsync(addMemberId);
       setAddMemberId("");
+      setShowAddMember(false);
     } catch (err) {
       setAddMemberError(err instanceof ApiError ? err.message : "Couldn't add that member.");
     }
@@ -126,56 +161,66 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         <Link href="/groups" className="text-sm font-medium text-slate-500 hover:text-slate-700">
           ← Back to groups
         </Link>
-        <h1 className="mt-1 text-xl font-semibold text-slate-900">{group.name}</h1>
+        <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl", palette.chip)}>
+              <UsersIcon className="h-5 w-5" />
+            </span>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-semibold text-slate-900">{group.name}</h1>
+                <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+                  {group.members.length} member{group.members.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
+                <CalendarIcon className="h-3.5 w-3.5" />
+                Created {new Date(group.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => setShowExpenseForm((v) => !v)} className="shrink-0 rounded-xl">
+            {showExpenseForm ? (
+              "Cancel"
+            ) : (
+              <>
+                <PlusIcon className="h-4 w-4" />
+                Add expense
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardTitle>Members</CardTitle>
-        <ul className="mt-3 space-y-2">
-          {group.members.map((m) => (
-            <li key={m.userId} className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-900">{m.displayName ?? m.usernameDisplay}</span>
-                {m.role === "OWNER" && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-500">Owner</span>}
-              </div>
-              {m.role !== "OWNER" && (
-                <button
-                  type="button"
-                  onClick={() => void removeMember.mutateAsync(m.userId)}
-                  className="text-xs font-medium text-slate-400 hover:text-red-600"
-                >
-                  Remove
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-        {nonMembers.length > 0 && (
-          <form onSubmit={handleAddMember} className="mt-4 flex items-end gap-2 border-t border-slate-100 pt-4">
-            <div className="flex-1">
-              <Label htmlFor="add-member">Add a friend</Label>
-              <Select id="add-member" required value={addMemberId} onChange={(e) => setAddMemberId(e.target.value)}>
-                <option value="">Select a friend</option>
-                {nonMembers.map((f) => (
-                  <option key={f.user.id} value={f.user.id}>
-                    {f.user.displayName ?? f.user.usernameDisplay}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <Button type="submit" size="sm" isLoading={addMember.isPending}>
-              Add
-            </Button>
-          </form>
-        )}
-        <ErrorText>{addMemberError}</ErrorText>
-      </Card>
-
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-slate-500">Group expenses</h2>
-        <Button size="sm" onClick={() => setShowExpenseForm((v) => !v)}>
-          {showExpenseForm ? "Cancel" : "Add expense"}
-        </Button>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <SummaryCard
+          label="Total expenses"
+          value={formatMoney(String(totals.totalExpensesMinor), currency)}
+          icon={<WalletIcon className="h-5 w-5" />}
+          tone="violet"
+          subtext={`${expenses?.items.length ?? 0} expense${expenses?.items.length === 1 ? "" : "s"}`}
+        />
+        <SummaryCard
+          label="You are owed"
+          value={formatMoney(String(totals.owedMinor), currency)}
+          icon={<ArrowUpIcon className="h-5 w-5" />}
+          tone="emerald"
+          valueClassName="text-emerald-600"
+        />
+        <SummaryCard
+          label="You owe"
+          value={formatMoney(String(totals.oweMinor), currency)}
+          icon={<ArrowDownIcon className="h-5 w-5" />}
+          tone="rose"
+          valueClassName="text-rose-600"
+        />
+        <SummaryCard
+          label="Members"
+          value={String(group.members.length)}
+          icon={<UsersIcon className="h-5 w-5" />}
+          tone="sky"
+          subtext="In this group"
+        />
       </div>
 
       {showExpenseForm && (
@@ -188,7 +233,14 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
               </div>
               <div>
                 <Label htmlFor="group-expense-amount">Amount ({currency})</Label>
-                <Input id="group-expense-amount" inputMode="decimal" required value={amount} onChange={(e) => setAmount(e.target.value)} />
+                <Input
+                  id="group-expense-amount"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor="group-expense-date">Date</Label>
@@ -206,71 +258,169 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         </Card>
       )}
 
-      {!expenses || expenses.items.length === 0 ? (
-        <EmptyState title="No expenses yet" description="Add the group's first shared expense above." />
-      ) : (
-        <Card className="p-0">
-          <ul className="divide-y divide-slate-100">
-            {expenses.items.map((e) => (
-              <li key={e.id} className="flex items-center justify-between gap-4 px-5 py-3">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{e.merchant ?? "Expense"}</p>
-                  <p className="text-xs text-slate-500">{new Date(e.date).toLocaleDateString()}</p>
+      <Card className="p-0">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900">Members</CardTitle>
+          <Button size="sm" variant="secondary" onClick={() => setShowAddMember((v) => !v)}>
+            {showAddMember ? "Cancel" : "Add member"}
+          </Button>
+        </div>
+        <ul className="divide-y divide-slate-100">
+          {group.members.map((m) => {
+            const name = m.displayName ?? m.usernameDisplay;
+            return (
+              <li key={m.userId} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar name={name} colorKey={m.userId} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {m.userId === user?.id ? "You" : name}
+                    </p>
+                    <p className="truncate text-xs text-slate-500">@{m.usernameDisplay}</p>
+                  </div>
                 </div>
-                <span className="text-sm font-medium tabular-nums text-slate-900">{formatMoney(e.amountMinor, e.currency)}</span>
+                {m.role === "OWNER" ? (
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Owner</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void removeMember.mutateAsync(m.userId)}
+                    className="shrink-0 text-xs font-medium text-slate-400 hover:text-red-600"
+                  >
+                    Remove
+                  </button>
+                )}
               </li>
-            ))}
-          </ul>
-        </Card>
-      )}
+            );
+          })}
+        </ul>
+        {showAddMember && (
+          <div className="border-t border-slate-100 p-5">
+            {nonMembers.length === 0 ? (
+              <p className="text-sm text-slate-500">All your friends are already in this group.</p>
+            ) : (
+              <form onSubmit={handleAddMember} className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Label htmlFor="add-member">Add a friend</Label>
+                  <Select id="add-member" required value={addMemberId} onChange={(e) => setAddMemberId(e.target.value)}>
+                    <option value="">Select a friend</option>
+                    {nonMembers.map((f) => (
+                      <option key={f.user.id} value={f.user.id}>
+                        {f.user.displayName ?? f.user.usernameDisplay}
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+                <Button type="submit" size="sm" isLoading={addMember.isPending}>
+                  Add
+                </Button>
+              </form>
+            )}
+            <ErrorText>{addMemberError}</ErrorText>
+          </div>
+        )}
+      </Card>
 
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-slate-500">Group balances</h2>
-        <Button size="sm" variant="secondary" onClick={() => setShowOptimize((v) => !v)}>
-          {showOptimize ? "Hide" : "Suggest settlements"}
-        </Button>
-      </div>
-      {groupBalances && groupBalances.items.some((row) => row.balances.length > 0) && (
-        <Card>
-          <ul className="space-y-1.5">
+      <Card className="overflow-hidden p-0">
+        <div className="border-b border-slate-100 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900">Group expenses</CardTitle>
+        </div>
+        {!expenses || expenses.items.length === 0 ? (
+          <div className="p-5">
+            <EmptyState title="No expenses yet" description="Add the group's first shared expense above." />
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {expenses.items.map((e, i) => {
+              const tone = ROW_TONES[i % ROW_TONES.length];
+              return (
+                <li key={e.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full", tone.bg, tone.text)}>
+                      <WalletIcon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">{e.merchant ?? "Expense"}</p>
+                      <p className="text-xs text-slate-500">{new Date(e.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
+                    {formatMoney(e.amountMinor, e.currency)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Card>
+
+      <Card className="overflow-hidden p-0">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900">Group balances</CardTitle>
+          <Button size="sm" variant="secondary" onClick={() => setShowOptimize((v) => !v)}>
+            {showOptimize ? "Hide" : "Suggest settlements"}
+          </Button>
+        </div>
+
+        {!groupBalances || !groupBalances.items.some((row) => row.balances.length > 0) ? (
+          <div className="p-5">
+            <EmptyState title="All settled up" description="Nobody owes anybody in this group right now." />
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
             {groupBalances.items
               .filter((row) => row.balances.length > 0)
-              .map((row) => (
-                <li key={row.user?.id} className="text-sm">
-                  <span className="font-medium text-slate-900">{row.user?.displayName ?? row.user?.usernameDisplay}</span>{" "}
-                  {row.balances.map((b) => (
-                    <span key={b.currency} className={BigInt(b.netMinor) > 0n ? "text-emerald-700" : "text-red-600"}>
-                      {BigInt(b.netMinor) > 0n
-                        ? `is owed ${formatMoney(b.netMinor, b.currency)}`
-                        : `owes ${formatMoney(b.netMinor.replace("-", ""), b.currency)}`}
-                    </span>
-                  ))}
-                </li>
-              ))}
+              .map((row) => {
+                const name = row.user?.displayName ?? row.user?.usernameDisplay ?? "Unknown";
+                return (
+                  <li key={row.user?.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Avatar name={name} colorKey={row.user?.id ?? name} />
+                      <p className="truncate text-sm font-medium text-slate-900">{name}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {row.balances.map((b) => (
+                        <p
+                          key={b.currency}
+                          className={cn("text-sm font-semibold tabular-nums", BigInt(b.netMinor) > 0n ? "text-emerald-700" : "text-rose-700")}
+                        >
+                          {BigInt(b.netMinor) > 0n
+                            ? `Owed ${formatMoney(b.netMinor, b.currency)}`
+                            : `Owes ${formatMoney(b.netMinor.replace("-", ""), b.currency)}`}
+                        </p>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
           </ul>
-        </Card>
-      )}
-      {showOptimize && (
-        <Card>
-          {optimizeLoading ? (
-            <div className="flex justify-center py-6">
-              <Spinner />
-            </div>
-          ) : !optimize || optimize.transfers.length === 0 ? (
-            <p className="text-sm text-slate-500">Nobody owes anybody in this group right now.</p>
-          ) : (
-            <ul className="space-y-2">
-              {optimize.transfers.map((t, i) => (
-                <li key={i} className="text-sm text-slate-700">
-                  <span className="font-medium">{t.from?.displayName ?? t.from?.usernameDisplay}</span> should pay{" "}
-                  <span className="font-medium">{t.to?.displayName ?? t.to?.usernameDisplay}</span>{" "}
-                  {formatMoney(t.amountMinor, optimize.currency)}
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      )}
+        )}
+
+        {showOptimize && (
+          <div className="border-t border-slate-100 p-5">
+            {optimizeLoading ? (
+              <div className="flex justify-center py-6">
+                <Spinner />
+              </div>
+            ) : !optimize || optimize.transfers.length === 0 ? (
+              <p className="text-sm text-slate-500">Nobody owes anybody in this group right now.</p>
+            ) : (
+              <ul className="space-y-2">
+                {optimize.transfers.map((t, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-700">
+                    <span className="font-medium text-slate-900">{t.from?.displayName ?? t.from?.usernameDisplay}</span>
+                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
+                    <span className="font-medium text-slate-900">{t.to?.displayName ?? t.to?.usernameDisplay}</span>
+                    <span className="ml-auto shrink-0 font-semibold tabular-nums text-indigo-600">
+                      {formatMoney(t.amountMinor, optimize.currency)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }

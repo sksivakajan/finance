@@ -16,9 +16,40 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { ErrorText } from "@/components/ui/error-text";
-import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
 import { SplitEditor } from "@/components/finance/split-editor";
+import { ExpenseStatCard } from "@/components/expenses/stat-card";
+import { MobileHeader } from "@/components/layout/mobile-header";
+import { categoryEmoji } from "@/lib/category-icon";
+import {
+  WalletIcon,
+  ArrowDownIcon,
+  PieChartIcon,
+  CalendarIcon,
+  SearchIcon,
+  FilterIcon,
+  ChevronDownIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+} from "@/components/dashboard/icons";
+
+const ROW_TONES = ["bg-violet-100", "bg-emerald-100", "bg-amber-100", "bg-sky-100", "bg-rose-100"];
+
+function TrackSpendingIllustration() {
+  return (
+    <svg width="72" height="72" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="2" fill="#f9a8d4" />
+      <circle cx="53" cy="9" r="1.5" fill="#fcd34d" />
+      <circle cx="9" cy="46" r="1.5" fill="#93c5fd" />
+      <circle cx="55" cy="49" r="2" fill="#f9a8d4" />
+      <circle cx="49" cy="22" r="1.5" fill="#86efac" />
+      <rect x="14" y="20" width="36" height="28" rx="7" fill="#ede9fe" />
+      <rect x="14" y="20" width="36" height="12" rx="7" fill="#c4b5fd" />
+      <rect x="24" y="31" width="16" height="4" rx="2" fill="#a78bfa" />
+    </svg>
+  );
+}
 
 const ACCEPTED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/heic,application/pdf";
 const RECENT_MERCHANT_LIMIT = 6;
@@ -50,9 +81,43 @@ export default function ExpensesPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isSplitting, setIsSplitting] = useState(false);
   const [splitState, setSplitState] = useState(emptySplitState);
+  const [search, setSearch] = useState("");
 
   const isEditing = editingId !== null;
   const isSaving = createExpense.isPending || updateExpense.isPending;
+
+  const filteredItems = useMemo(() => {
+    if (!data) return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return data.items;
+    return data.items.filter((expense) => {
+      const categoryName = categories?.find((c) => c.id === expense.categoryId)?.name ?? "";
+      return (expense.merchant ?? "").toLowerCase().includes(q) || categoryName.toLowerCase().includes(q);
+    });
+  }, [data, search, categories]);
+
+  const stats = useMemo(() => {
+    if (!data || data.items.length === 0) return null;
+    const items = data.items;
+    const totalMinor = items.reduce((sum, e) => sum + Number(e.amountMinor), 0);
+    const now = new Date();
+    const monthItems = items.filter((e) => {
+      const d = new Date(e.date);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+    const monthMinor = monthItems.reduce((sum, e) => sum + Number(e.amountMinor), 0);
+    const avgMinor = Math.round(totalMinor / items.length);
+    const largest = items.reduce((max, e) => (Number(e.amountMinor) > Number(max.amountMinor) ? e : max), items[0]);
+    return {
+      totalMinor,
+      count: items.length,
+      monthMinor,
+      monthLabel: now.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      avgMinor,
+      largest,
+      largestLabel: largest.merchant ?? "Expense",
+    };
+  }, [data]);
 
   // Quick-pick shortcuts for faster daily entry: the merchants a user
   // actually uses, most-recent-first, deduplicated.
@@ -152,14 +217,66 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <MobileHeader
+        title="Expenses"
+        right={
+          <button
+            type="button"
+            onClick={() => (showForm ? closeForm() : openCreateForm())}
+            aria-label={showForm ? "Cancel" : "Add expense"}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          >
+            <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
+          </button>
+        }
+      />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:hidden">
+        <div className="relative flex-1">
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search expenses..."
+            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+          />
+        </div>
+      </div>
+      <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Expenses</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Expenses</h1>
           <p className="text-sm text-slate-500">Everything you&apos;ve spent.</p>
         </div>
-        <Button onClick={() => (showForm ? closeForm() : openCreateForm())}>
-          {showForm ? "Cancel" : "Add expense"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search expenses..."
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64"
+            />
+          </div>
+          <button
+            type="button"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            <FilterIcon className="h-4 w-4" />
+            Filter
+            <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
+          </button>
+          <Button onClick={() => (showForm ? closeForm() : openCreateForm())} className="shrink-0 rounded-xl">
+            {showForm ? (
+              "Cancel"
+            ) : (
+              <>
+                <PlusIcon className="h-4 w-4" />
+                Add expense
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {showForm && (
@@ -323,45 +440,114 @@ export default function ExpensesPage() {
         <div className="flex justify-center py-16">
           <Spinner />
         </div>
-      ) : !data || data.items.length === 0 ? (
-        <EmptyState title="No expenses yet" description="Start tracking your spending to understand where your money goes." />
       ) : (
-        <Card className="p-0">
-          <ul className="divide-y divide-slate-100">
-            {data.items.map((expense) => (
-              <li key={expense.id} className="flex items-center justify-between gap-4 px-5 py-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">{expense.merchant ?? "Expense"}</p>
-                  <p className="text-xs text-slate-500">
-                    {new Date(expense.date).toLocaleDateString()}
-                    {expense.attachmentUrl ? " · Receipt attached" : ""}
-                    {expense.splitMethod !== "NONE" ? " · Split" : ""}
-                  </p>
+        <>
+          {stats && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <ExpenseStatCard
+                label="Total expenses"
+                value={`-${formatMoney(String(stats.totalMinor), currency)}`}
+                sublabel={`${stats.count} transaction${stats.count === 1 ? "" : "s"}`}
+                icon={<WalletIcon className="h-5 w-5" />}
+                tone="violet"
+              />
+              <ExpenseStatCard
+                label="This month"
+                value={`-${formatMoney(String(stats.monthMinor), currency)}`}
+                sublabel={stats.monthLabel}
+                icon={<ArrowDownIcon className="h-5 w-5" />}
+                tone="emerald"
+              />
+              <ExpenseStatCard
+                label="Average expense"
+                value={`-${formatMoney(String(stats.avgMinor), currency)}`}
+                sublabel="Per transaction"
+                icon={<PieChartIcon className="h-5 w-5" />}
+                tone="amber"
+              />
+              <ExpenseStatCard
+                label="Largest expense"
+                value={`-${formatMoney(stats.largest.amountMinor, stats.largest.currency)}`}
+                sublabel={stats.largestLabel}
+                icon={<CalendarIcon className="h-5 w-5" />}
+                tone="sky"
+              />
+            </div>
+          )}
+
+          <Card className="overflow-hidden p-0">
+            {filteredItems.length > 0 ? (
+              <>
+                <div className="hidden grid-cols-[1fr_140px_160px_110px] gap-4 border-b border-slate-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-slate-400 sm:grid">
+                  <span>Expense</span>
+                  <span>Date</span>
+                  <span className="text-right">Amount</span>
+                  <span className="text-right">Actions</span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium tabular-nums text-slate-900">
-                    -{formatMoney(expense.amountMinor, expense.currency)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => openEditForm(expense)}
-                    className="text-xs font-medium text-slate-400 hover:text-indigo-600"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void removeExpense.mutateAsync(expense.id)}
-                    className="text-xs font-medium text-slate-400 hover:text-red-600"
-                    aria-label={`Delete expense at ${expense.merchant ?? "merchant"}`}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                <ul className="divide-y divide-slate-100">
+                  {filteredItems.map((expense, i) => {
+                    const category = categories?.find((c) => c.id === expense.categoryId);
+                    const subtitle =
+                      expense.splitMethod !== "NONE" ? "Split" : expense.attachmentUrl ? "Receipt attached" : (category?.name ?? null);
+                    return (
+                      <li
+                        key={expense.id}
+                        className="grid grid-cols-[1fr_auto] items-center gap-3 px-5 py-4 sm:grid-cols-[1fr_140px_160px_110px]"
+                      >
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg",
+                              ROW_TONES[i % ROW_TONES.length],
+                            )}
+                            aria-hidden="true"
+                          >
+                            {categoryEmoji(category?.icon ?? null)}
+                          </span>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-900">{expense.merchant ?? "Expense"}</p>
+                            {subtitle && <p className="truncate text-xs text-slate-500">{subtitle}</p>}
+                          </div>
+                        </div>
+                        <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
+                          <CalendarIcon className="h-3.5 w-3.5 text-slate-400" />
+                          {new Date(expense.date).toLocaleDateString()}
+                        </div>
+                        <div className="text-right text-sm font-semibold tabular-nums text-rose-600">
+                          -{formatMoney(expense.amountMinor, expense.currency)}
+                        </div>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditForm(expense)}
+                            aria-label={`Edit expense at ${expense.merchant ?? "merchant"}`}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-indigo-600 hover:bg-indigo-50"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void removeExpense.mutateAsync(expense.id)}
+                            aria-label={`Delete expense at ${expense.merchant ?? "merchant"}`}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+                <TrackSpendingIllustration />
+                <p className="text-sm font-semibold text-slate-900">Track your spending</p>
+                <p className="max-w-sm text-sm text-slate-500">Add expenses to see insights and manage your money better.</p>
+              </div>
+            )}
+          </Card>
+        </>
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { useIncomeSummary, useMonthlySeries, useCategoryBreakdown } from "@/lib/
 import { useCashFlowForecast } from "@/lib/hooks/use-forecast";
 import { formatMoney, toMinorUnits, fromMinorUnits } from "@/lib/money";
 import { ApiError } from "@/lib/api-client";
+import { cn } from "@/lib/cn";
 import { paletteForKey } from "@/lib/category-palette";
 import type { IncomeRecord } from "@/lib/types";
 import type { RecurrenceFrequency } from "@finance/shared";
@@ -17,12 +18,13 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Card, CardTitle } from "@/components/ui/card";
 import { SummaryCard } from "@/components/ui/summary-card";
+import { MobileHeader } from "@/components/layout/mobile-header";
 import { ErrorText } from "@/components/ui/error-text";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Spinner } from "@/components/ui/spinner";
 import { IncomeChart } from "@/components/income/income-chart";
 import { CategoryDonut } from "@/components/income/category-donut";
-import { WalletIcon, TrendUpIcon, CalendarIcon, PencilIcon, TrashIcon } from "@/components/dashboard/icons";
+import { WalletIcon, TrendUpIcon, CalendarIcon, PencilIcon, TrashIcon, PlusIcon } from "@/components/dashboard/icons";
 
 const CHART_MONTH_OPTIONS = [
   { months: 6, label: "Last 6 Months" },
@@ -193,7 +195,20 @@ export default function IncomePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <MobileHeader
+        title="Income"
+        right={
+          <button
+            type="button"
+            onClick={() => (showForm ? closeForm() : openCreateForm())}
+            aria-label={showForm ? "Cancel" : "Add income"}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+          >
+            <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
+          </button>
+        }
+      />
+      <div className="hidden flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Income</h1>
           <p className="text-sm text-slate-500">Track all your income sources in one place</p>
