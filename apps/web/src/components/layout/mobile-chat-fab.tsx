@@ -48,11 +48,15 @@ export function MobileChatFab() {
 
   function releaseCapture(e: React.PointerEvent<HTMLButtonElement>) {
     // The pointer sequence can end (browser-cancelled gesture, capture lost
-    // to another element, etc.) before this runs, in which case the
-    // pointerId is no longer valid and release throws a NotFoundError --
-    // only release when we actually still hold it.
-    if (buttonRef.current?.hasPointerCapture(e.pointerId)) {
+    // to another element, etc.) between this check and the call below --
+    // hasPointerCapture briefly reporting true doesn't guarantee release
+    // won't still throw (seen in practice on Firefox's touch emulation), so
+    // the call itself has to be defensive too, not just the precondition.
+    if (!buttonRef.current?.hasPointerCapture(e.pointerId)) return;
+    try {
       buttonRef.current.releasePointerCapture(e.pointerId);
+    } catch {
+      // Already released/invalid by the time we got here -- nothing to do.
     }
   }
 
