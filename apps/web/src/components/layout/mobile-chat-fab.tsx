@@ -57,6 +57,14 @@ export function MobileChatFab() {
   }
 
   function handlePointerDown(e: React.PointerEvent<HTMLButtonElement>) {
+    // Stop the browser's own touch gesture recognizer (scroll, pull-to-
+    // refresh, edge-swipe-back) from arming at all -- on a real touchscreen
+    // it can otherwise hijack a fast/long drag partway through, most
+    // noticeably on vertical moves toward a screen edge, well before our
+    // own pointermove math ever gets a say. `touch-action: none` on the
+    // element covers most of this, but isn't reliably enough on its own
+    // across browsers, hence the explicit preventDefault here too.
+    e.preventDefault();
     try {
       buttonRef.current?.setPointerCapture(e.pointerId);
     } catch {
@@ -74,6 +82,7 @@ export function MobileChatFab() {
   function handlePointerMove(e: React.PointerEvent<HTMLButtonElement>) {
     const drag = dragState.current;
     if (!drag) return;
+    e.preventDefault();
     const rect = buttonRef.current?.getBoundingClientRect();
     const offsetX = rect ? e.clientX - rect.left - drag.startX : 0;
     const offsetY = rect ? e.clientY - rect.top - drag.startY : 0;
