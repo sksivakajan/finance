@@ -38,7 +38,7 @@ const STATUS_STYLES: Record<LoanRecord["status"], string> = {
   ACTIVE: "bg-indigo-50 text-indigo-700",
   PAID_OFF: "bg-emerald-50 text-emerald-700",
   DEFAULTED: "bg-rose-50 text-rose-700",
-  CANCELLED: "bg-slate-100 text-slate-400",
+  CANCELLED: "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500",
 };
 
 const ROW_TONES = [
@@ -95,12 +95,12 @@ function LoanMenu({
         onClick={() => setOpen((v) => !v)}
         disabled={isPending}
         aria-label={`Actions for ${loan.counterpartyName}`}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 disabled:opacity-50"
       >
         <MoreVerticalIcon className="h-4 w-4" />
       </button>
       {open && (
-        <div className="absolute right-0 top-9 z-10 w-44 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+        <div className="absolute right-0 top-9 z-10 w-44 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-1 shadow-lg">
           {loan.status === "ACTIVE" ? (
             <>
               <button
@@ -109,7 +109,7 @@ function LoanMenu({
                   onUpdateStatus("PAID_OFF");
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                className="block w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
                 Mark as paid off
               </button>
@@ -119,7 +119,7 @@ function LoanMenu({
                   onUpdateStatus("DEFAULTED");
                   setOpen(false);
                 }}
-                className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+                className="block w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
                 Mark as defaulted
               </button>
@@ -141,7 +141,7 @@ function LoanMenu({
                 onUpdateStatus("ACTIVE");
                 setOpen(false);
               }}
-              className="block w-full px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50"
+              className="block w-full px-3 py-2 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
             >
               Reopen loan
             </button>
@@ -162,14 +162,14 @@ function PayoffSchedule({ loanId, currency }: { loanId: string; currency: string
     );
   }
   if (!data || data.points.length === 0) {
-    return <p className="mt-3 text-xs text-slate-500">No payment schedule set for this loan.</p>;
+    return <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">No payment schedule set for this loan.</p>;
   }
   return (
-    <div className="mt-3 space-y-1 border-t border-slate-100 pt-3">
+    <div className="mt-3 space-y-1 border-t border-slate-100 dark:border-slate-800 pt-3">
       <p className="text-xs text-amber-700">Estimate — assumes every installment lands on schedule.</p>
       <ul className="max-h-48 space-y-1 overflow-y-auto text-xs">
         {data.points.map((p, i) => (
-          <li key={i} className="flex justify-between text-slate-600">
+          <li key={i} className="flex justify-between text-slate-600 dark:text-slate-300">
             <span>{new Date(p.date).toLocaleDateString()}</span>
             <span className="tabular-nums">{formatMoney(p.remainingMinor, currency)} remaining</span>
           </li>
@@ -213,27 +213,27 @@ function LoanRow({ loan, currency, tone }: { loan: LoanRecord; currency: string;
           </span>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-slate-900">{loan.counterpartyName}</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{loan.counterpartyName}</p>
               <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs font-medium", STATUS_STYLES[loan.status])}>
                 {loan.status.replace("_", " ")}
               </span>
             </div>
-            <p className="text-xs text-slate-500">{loan.direction === "I_OWE" ? "You owe" : "Owed to you"}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{loan.direction === "I_OWE" ? "You owe" : "Owed to you"}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-sm lg:flex lg:gap-8">
           <div>
-            <p className="text-xs text-slate-400">Principal</p>
-            <p className="font-semibold tabular-nums text-slate-900">{formatMoney(loan.principalMinor, loan.currency)}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Principal</p>
+            <p className="font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatMoney(loan.principalMinor, loan.currency)}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Paid</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Paid</p>
             <p className="font-semibold tabular-nums text-emerald-700">{formatMoney(loan.paidMinor, loan.currency)}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400">Remaining</p>
-            <p className="font-semibold tabular-nums text-slate-900">{formatMoney(loan.remainingMinor, loan.currency)}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">Remaining</p>
+            <p className="font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatMoney(loan.remainingMinor, loan.currency)}</p>
           </div>
         </div>
 
@@ -258,7 +258,7 @@ function LoanRow({ loan, currency, tone }: { loan: LoanRecord; currency: string;
       </div>
 
       <div className="mt-3 flex items-center gap-2">
-        <div className="h-2 w-full flex-1 overflow-hidden rounded-full bg-slate-100">
+        <div className="h-2 w-full flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
             className={cn("h-full rounded-full", loan.status === "PAID_OFF" ? "bg-emerald-500" : "bg-indigo-500")}
             style={{ width: `${Math.min(progressPct, 100)}%` }}
@@ -276,7 +276,7 @@ function LoanRow({ loan, currency, tone }: { loan: LoanRecord; currency: string;
       {showPayoff && <PayoffSchedule loanId={loan.id} currency={loan.currency} />}
 
       {showPaymentForm && (
-        <form onSubmit={handleAddPayment} className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-2">
+        <form onSubmit={handleAddPayment} className="mt-4 grid gap-3 border-t border-slate-100 dark:border-slate-800 pt-4 sm:grid-cols-2">
           <div>
             <Label htmlFor={`amount-${loan.id}`}>Amount ({currency})</Label>
             <Input
@@ -411,7 +411,7 @@ export default function LoansPage() {
             type="button"
             onClick={() => setShowForm((v) => !v)}
             aria-label={showForm ? "Cancel" : "Add loan"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
           </button>
@@ -419,18 +419,18 @@ export default function LoansPage() {
       />
       <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Loans</h1>
-          <p className="text-sm text-slate-500">Money you owe, and money owed to you.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Loans</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Money you owe, and money owed to you.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search loans..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64"
             />
           </div>
           <Button onClick={() => setShowForm((v) => !v)} className="shrink-0 rounded-xl">
@@ -446,13 +446,13 @@ export default function LoansPage() {
         </div>
       </div>
       <div className="relative md:hidden">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search loans..."
-          className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+          className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
         />
       </div>
 
@@ -491,12 +491,12 @@ export default function LoansPage() {
               <Input id="startDate" type="date" required value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
             <div className="sm:col-span-2">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                 <input
                   type="checkbox"
                   checked={hasSchedule}
                   onChange={(e) => setHasSchedule(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500"
                 />
                 Set a repeating installment schedule
               </label>
@@ -586,13 +586,13 @@ export default function LoansPage() {
           )}
 
           <Card className="overflow-hidden p-0">
-            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative">
-                <FilterIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <FilterIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <select
                   value={filter}
                   onChange={(e) => setFilter(e.target.value as FilterValue)}
-                  className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-8 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-8 text-sm font-medium text-slate-700 dark:text-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 >
                   <option value="ALL">All loans</option>
                   <option value="I_OWE">You owe</option>
@@ -600,31 +600,31 @@ export default function LoansPage() {
                   <option value="ACTIVE">Active</option>
                   <option value="PAID_OFF">Paid off</option>
                 </select>
-                <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-slate-500">Sort by</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">Sort by</span>
                 <div className="relative">
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value as SortValue)}
-                    className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-3 pr-8 text-sm font-medium text-slate-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                    className="appearance-none rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-3 pr-8 text-sm font-medium text-slate-700 dark:text-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                   >
                     <option value="RECENT">Recently added</option>
                     <option value="PRINCIPAL">Highest principal</option>
                     <option value="REMAINING">Highest remaining</option>
                     <option value="PROGRESS">Most progress</option>
                   </select>
-                  <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 </div>
               </div>
             </div>
 
             {visibleLoans.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-slate-500">No loans match your filters.</p>
+              <p className="px-5 py-10 text-center text-sm text-slate-500 dark:text-slate-400">No loans match your filters.</p>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                 {visibleLoans.map((loan, i) => (
                   <LoanRow key={loan.id} loan={loan} currency={currency} tone={ROW_TONES[i % ROW_TONES.length]} />
                 ))}
@@ -636,8 +636,8 @@ export default function LoansPage() {
             <div className="flex items-start gap-4">
               <LoanIllustration />
               <div>
-                <p className="text-sm font-semibold text-slate-900">Stay on top of your loans</p>
-                <p className="text-sm text-slate-500">Record payments, track progress, and stay debt-free.</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Stay on top of your loans</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Record payments, track progress, and stay debt-free.</p>
               </div>
             </div>
             <Link href="/forecast">

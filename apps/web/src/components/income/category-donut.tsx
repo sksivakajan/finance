@@ -48,9 +48,9 @@ export function CategoryDonut({ entries, currency }: { entries: CategoryBreakdow
           </g>
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <p className="text-xs text-slate-500">{currency}</p>
-          <p className="text-lg font-semibold tabular-nums text-slate-900">{(total / 100).toLocaleString()}</p>
-          <p className="text-xs text-slate-500">Total</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{currency}</p>
+          <p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">{(total / 100).toLocaleString()}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
         </div>
       </div>
       <ul className="w-full min-w-0 flex-1 space-y-3">
@@ -60,11 +60,11 @@ export function CategoryDonut({ entries, currency }: { entries: CategoryBreakdow
             <li key={entry.categoryId} className="flex items-center justify-between gap-3 text-sm">
               <div className="flex min-w-0 items-center gap-2">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${paletteForKey(entry.categoryId).dot}`} />
-                <span className="min-w-0 truncate font-medium text-slate-900">{entry.name}</span>
+                <span className="min-w-0 truncate font-medium text-slate-900 dark:text-slate-50">{entry.name}</span>
               </div>
               <div className="shrink-0 text-right">
-                <p className="tabular-nums font-medium text-slate-900">{formatMoney(entry.amountMinor, currency)}</p>
-                <p className="text-xs text-slate-500">{pct}%</p>
+                <p className="tabular-nums font-medium text-slate-900 dark:text-slate-50">{formatMoney(entry.amountMinor, currency)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{pct}%</p>
               </div>
             </li>
           );

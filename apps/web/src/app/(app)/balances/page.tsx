@@ -34,7 +34,11 @@ import {
   TrendDownIcon,
 } from "@/components/dashboard/icons";
 
-function Avatar({ label }: { label: string }) {
+function Avatar({ label, src }: { label: string; src?: string | null }) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element -- proxied same-origin /uploads URL, not an <Image>-optimizable remote host
+    return <img src={src} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />;
+  }
   return (
     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-semibold text-indigo-700">
       {label.charAt(0).toUpperCase()}
@@ -91,7 +95,7 @@ function SettleForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-slate-100 pt-3">
+    <form onSubmit={handleSubmit} className="mt-3 flex flex-wrap items-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
       <div>
         <Label htmlFor={`settle-amount-${row.user?.id}`}>
           {owesYou ? "Mark as paid to you" : "Amount you paid"} ({primary?.currency ?? currency})
@@ -228,7 +232,7 @@ export default function BalancesPage() {
             type="button"
             onClick={() => setShowRequestForm((v) => !v)}
             aria-label={showRequestForm ? "Cancel" : "Request money"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <SendIcon className="h-5 w-5" />
           </button>
@@ -236,8 +240,8 @@ export default function BalancesPage() {
       />
       <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Balances</h1>
-          <p className="text-sm text-slate-500">Who owes whom, from shared expenses and settlements.</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Balances</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Who owes whom, from shared expenses and settlements.</p>
         </div>
         <Button onClick={() => setShowRequestForm((v) => !v)} className="shrink-0 rounded-xl">
           {showRequestForm ? (
@@ -319,12 +323,12 @@ export default function BalancesPage() {
             <div className="flex items-start justify-between gap-3 p-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-semibold text-slate-900">You are owed</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-50">You are owed</CardTitle>
                   <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-700">
                     {outgoing?.items.length ?? 0}
                   </span>
                 </div>
-                <p className="text-sm text-slate-500">People who owe you money.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">People who owe you money.</p>
               </div>
             </div>
 
@@ -337,7 +341,7 @@ export default function BalancesPage() {
               </div>
             ) : (
               <>
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {outgoing.items.map((req) => (
                     <li key={req.id} className="flex items-center justify-between gap-3 px-5 py-4">
                       <div className="flex min-w-0 items-center gap-3">
@@ -345,10 +349,10 @@ export default function BalancesPage() {
                           <BanknoteIcon className="h-5 w-5" />
                         </span>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold tabular-nums text-slate-900">
+                          <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                             {formatMoney(req.amountMinor, req.currency)}
                           </p>
-                          <p className="truncate text-xs text-slate-500">
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                             {requestPersonName(req, "receiver", friendNameById)}
                           </p>
                         </div>
@@ -365,8 +369,8 @@ export default function BalancesPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-3">
-                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-5 py-3">
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     <BanknoteIcon className="h-4 w-4 text-violet-600" />
                     Total you are owed
                   </span>
@@ -382,26 +386,26 @@ export default function BalancesPage() {
             <div className="flex items-start justify-between gap-3 p-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-semibold text-slate-900">You owe</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-50">You owe</CardTitle>
                   <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                     {incoming?.items.length ?? 0}
                   </span>
                 </div>
-                <p className="text-sm text-slate-500">People you owe money to.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">People you owe money to.</p>
               </div>
             </div>
 
             {!incoming || incoming.items.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-1 px-6 pb-8 text-center">
                 <AllSettledIllustration />
-                <p className="mt-1 text-sm font-semibold text-slate-900">Great! You don&apos;t owe anyone right now.</p>
-                <p className="text-sm text-slate-500">
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-50">Great! You don&apos;t owe anyone right now.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   All settled up! <span aria-hidden="true">🎉</span>
                 </p>
               </div>
             ) : (
               <>
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {incoming.items.map((req) => (
                     <li key={req.id} className="flex items-center justify-between gap-3 px-5 py-4">
                       <div className="flex min-w-0 items-center gap-3">
@@ -409,10 +413,10 @@ export default function BalancesPage() {
                           <BanknoteIcon className="h-5 w-5" />
                         </span>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold tabular-nums text-slate-900">
+                          <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                             {formatMoney(req.amountMinor, req.currency)}
                           </p>
-                          <p className="truncate text-xs text-slate-500">
+                          <p className="truncate text-xs text-slate-500 dark:text-slate-400">
                             {requestPersonName(req, "sender", friendNameById)}
                           </p>
                         </div>
@@ -433,8 +437,8 @@ export default function BalancesPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-3">
-                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-5 py-3">
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
                     <BanknoteIcon className="h-4 w-4 text-rose-600" />
                     Total you owe
                   </span>
@@ -450,12 +454,12 @@ export default function BalancesPage() {
             <div className="flex items-start justify-between gap-3 p-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-semibold text-slate-900">With your friends</CardTitle>
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                  <CardTitle className="text-sm font-semibold text-slate-900 dark:text-slate-50">With your friends</CardTitle>
+                  <span className="rounded-full bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:text-slate-300">
                     {balances?.items.length ?? 0}
                   </span>
                 </div>
-                <p className="text-sm text-slate-500">Split expenses and shared bills.</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Split expenses and shared bills.</p>
               </div>
             </div>
 
@@ -468,7 +472,7 @@ export default function BalancesPage() {
               </div>
             ) : (
               <>
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {balances.items.map((row) => {
                     const name = row.user?.displayName ?? row.user?.usernameDisplay ?? "Unknown";
                     const primary = row.balances[0];
@@ -477,9 +481,9 @@ export default function BalancesPage() {
                       <li key={row.user?.id} className="px-5 py-4">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex min-w-0 items-center gap-3">
-                            <Avatar label={name} />
+                            <Avatar label={name} src={row.user?.avatarUrl} />
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-medium text-slate-900">{name}</p>
+                              <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{name}</p>
                               {row.balances.map((b) => (
                                 <p
                                   key={b.currency}
@@ -511,7 +515,7 @@ export default function BalancesPage() {
                               onClick={() =>
                                 setSettlingWith(settlingWith === row.user?.id ? null : (row.user?.id ?? null))
                               }
-                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+                              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                             >
                               <MoreVerticalIcon className="h-4 w-4" />
                             </button>
@@ -524,9 +528,9 @@ export default function BalancesPage() {
                     );
                   })}
                 </ul>
-                <div className="flex items-center justify-between gap-3 border-t border-slate-100 bg-slate-50 px-5 py-3">
-                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <UsersIcon className="h-4 w-4 text-slate-500" />
+                <div className="flex items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-5 py-3">
+                  <span className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-200">
+                    <UsersIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />
                     Total from friends
                   </span>
                   <span
@@ -542,17 +546,17 @@ export default function BalancesPage() {
             )}
           </Card>
 
-          <Card className="grid grid-cols-1 gap-0 divide-y divide-slate-100 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+          <Card className="grid grid-cols-1 gap-0 divide-y divide-slate-100 dark:divide-slate-800 p-0 sm:grid-cols-4 sm:divide-x sm:divide-y-0">
             <div className="flex items-center gap-3 p-5">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-100 text-violet-700">
                 <TrendUpIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm text-slate-500">You are owed</p>
-                <p className="text-lg font-semibold tabular-nums text-slate-900">
+                <p className="text-sm text-slate-500 dark:text-slate-400">You are owed</p>
+                <p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                   {formatMoney(String(friendsTotals.owedToYou), currency)}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400 dark:text-slate-500">
                   {friendsTotals.owedByCount} {friendsTotals.owedByCount === 1 ? "person" : "people"}
                 </p>
               </div>
@@ -562,11 +566,11 @@ export default function BalancesPage() {
                 <TrendDownIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm text-slate-500">You owe</p>
-                <p className="text-lg font-semibold tabular-nums text-slate-900">
+                <p className="text-sm text-slate-500 dark:text-slate-400">You owe</p>
+                <p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                   {formatMoney(String(friendsTotals.youOwe), currency)}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400 dark:text-slate-500">
                   {friendsTotals.owingCount} {friendsTotals.owingCount === 1 ? "person" : "people"}
                 </p>
               </div>
@@ -576,17 +580,17 @@ export default function BalancesPage() {
                 <UsersIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm text-slate-500">Net balance</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Net balance</p>
                 <p
                   className={cn(
                     "text-lg font-semibold tabular-nums",
-                    friendsTotals.net > 0 ? "text-emerald-700" : friendsTotals.net < 0 ? "text-rose-700" : "text-slate-900",
+                    friendsTotals.net > 0 ? "text-emerald-700" : friendsTotals.net < 0 ? "text-rose-700" : "text-slate-900 dark:text-slate-50",
                   )}
                 >
                   {friendsTotals.net > 0 ? "+" : friendsTotals.net < 0 ? "-" : ""}
                   {formatMoney(String(Math.abs(friendsTotals.net)), currency)}
                 </p>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-400 dark:text-slate-500">
                   {friendsTotals.net > 0 ? "You are ahead" : friendsTotals.net < 0 ? "You are behind" : "All settled"}
                 </p>
               </div>
@@ -596,9 +600,9 @@ export default function BalancesPage() {
                 <CheckCircleIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-sm text-slate-500">Settled</p>
-                <p className="text-lg font-semibold tabular-nums text-slate-900">{friendsTotals.settledCount}</p>
-                <p className="text-xs text-slate-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Settled</p>
+                <p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-50">{friendsTotals.settledCount}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
                   {friendsTotals.settledCount === 1 ? "friend" : "friends"} up to date
                 </p>
               </div>

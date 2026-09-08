@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Lets the dev server serve JS chunks / HMR to a browser loading the app
   // from the tunnel hostname instead of localhost.
-  allowedDevOrigins: ["addresses-maternity-pulling-carb.trycloudflare.com", "172.28.18.53"],
+  allowedDevOrigins: ["enquiry-martial-oem-group.trycloudflare.com", "172.28.18.53"],
   // Proxies /api/* to the NestJS server so the browser only ever talks to
   // this app's own origin. Needed for tunneled access and for production
   // (e.g. Render): the auth refresh cookie is sameSite=strict, so browser
@@ -20,6 +20,13 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         destination: `${apiOrigin}/:path*`,
+      },
+      // /uploads/* URLs are stored root-relative (see avatarUrlSchema) so
+      // they resolve against whatever origin is currently serving the app --
+      // this proxy is what makes that resolution actually correct.
+      {
+        source: "/uploads/:path*",
+        destination: `${apiOrigin}/uploads/:path*`,
       },
     ];
   },

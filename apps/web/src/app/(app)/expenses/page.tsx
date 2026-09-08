@@ -224,7 +224,7 @@ export default function ExpensesPage() {
             type="button"
             onClick={() => (showForm ? closeForm() : openCreateForm())}
             aria-label={showForm ? "Cancel" : "Add expense"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
           </button>
@@ -232,39 +232,39 @@ export default function ExpensesPage() {
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:hidden">
         <div className="relative flex-1">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search expenses..."
-            className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
           />
         </div>
       </div>
       <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Expenses</h1>
-          <p className="text-sm text-slate-500">Everything you&apos;ve spent.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Expenses</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Everything you&apos;ve spent.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search expenses..."
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-64"
             />
           </div>
           <button
             type="button"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
           >
             <FilterIcon className="h-4 w-4" />
             Filter
-            <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
+            <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
           </button>
           <Button onClick={() => (showForm ? closeForm() : openCreateForm())} className="shrink-0 rounded-xl">
             {showForm ? (
@@ -301,7 +301,7 @@ export default function ExpensesPage() {
                         "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
                         form.merchant === m
                           ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                          : "border-slate-200 text-slate-600 hover:bg-slate-50",
+                          : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60",
                       )}
                     >
                       {m}
@@ -346,7 +346,7 @@ export default function ExpensesPage() {
                         "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
                         form.categoryId === c.id
                           ? "border-indigo-300 bg-indigo-50 text-indigo-700"
-                          : "border-slate-200 text-slate-600 hover:bg-slate-50",
+                          : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60",
                       )}
                     >
                       {c.name}
@@ -374,12 +374,12 @@ export default function ExpensesPage() {
             </div>
             {!isEditing && friends && friends.items.length > 0 && (
               <div className="sm:col-span-2">
-                <label className="flex items-center gap-2 text-sm text-slate-700">
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                   <input
                     type="checkbox"
                     checked={isSplitting}
                     onChange={(e) => setIsSplitting(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500"
                   />
                   Split this expense with friends
                 </label>
@@ -404,11 +404,11 @@ export default function ExpensesPage() {
                 accept={ACCEPTED_FILE_TYPES}
                 onChange={(e) => void handleFileChange(e)}
                 disabled={isUploading}
-                className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                className="block w-full text-sm text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 dark:bg-slate-800 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 dark:text-slate-200 hover:file:bg-slate-200 dark:bg-slate-700"
               />
-              <p className="mt-1 text-xs text-slate-500">JPEG, PNG, WEBP, HEIC, or PDF. Up to 5MB.</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">JPEG, PNG, WEBP, HEIC, or PDF. Up to 5MB.</p>
               {isUploading && (
-                <p className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                <p className="mt-1 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <Spinner className="h-3.5 w-3.5" /> Uploading…
                 </p>
               )}
@@ -418,7 +418,7 @@ export default function ExpensesPage() {
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, attachmentUrl: "" }))}
-                    className="font-medium text-slate-400 hover:text-red-600"
+                    className="font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                   >
                     Remove
                   </button>
@@ -478,13 +478,13 @@ export default function ExpensesPage() {
           <Card className="overflow-hidden p-0">
             {filteredItems.length > 0 ? (
               <>
-                <div className="hidden grid-cols-[1fr_140px_160px_110px] gap-4 border-b border-slate-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-slate-400 sm:grid">
+                <div className="hidden grid-cols-[1fr_140px_160px_110px] gap-4 border-b border-slate-100 dark:border-slate-800 px-5 py-3 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500 sm:grid">
                   <span>Expense</span>
                   <span>Date</span>
                   <span className="text-right">Amount</span>
                   <span className="text-right">Actions</span>
                 </div>
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredItems.map((expense, i) => {
                     const category = categories?.find((c) => c.id === expense.categoryId);
                     const subtitle =
@@ -505,12 +505,12 @@ export default function ExpensesPage() {
                             {categoryEmoji(category?.icon ?? null)}
                           </span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-semibold text-slate-900">{expense.merchant ?? "Expense"}</p>
-                            {subtitle && <p className="truncate text-xs text-slate-500">{subtitle}</p>}
+                            <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{expense.merchant ?? "Expense"}</p>
+                            {subtitle && <p className="truncate text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
                           </div>
                         </div>
-                        <div className="hidden items-center gap-1.5 text-sm text-slate-500 sm:flex">
-                          <CalendarIcon className="h-3.5 w-3.5 text-slate-400" />
+                        <div className="hidden items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 sm:flex">
+                          <CalendarIcon className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
                           {new Date(expense.date).toLocaleDateString()}
                         </div>
                         <div className="text-right text-sm font-semibold tabular-nums text-rose-600">
@@ -521,7 +521,7 @@ export default function ExpensesPage() {
                             type="button"
                             onClick={() => openEditForm(expense)}
                             aria-label={`Edit expense at ${expense.merchant ?? "merchant"}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-indigo-600 hover:bg-indigo-50"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-indigo-600 hover:bg-indigo-50"
                           >
                             <PencilIcon className="h-4 w-4" />
                           </button>
@@ -529,7 +529,7 @@ export default function ExpensesPage() {
                             type="button"
                             onClick={() => void removeExpense.mutateAsync(expense.id)}
                             aria-label={`Delete expense at ${expense.merchant ?? "merchant"}`}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50"
+                            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-rose-600 hover:bg-rose-50"
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
@@ -542,8 +542,8 @@ export default function ExpensesPage() {
             ) : (
               <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
                 <TrackSpendingIllustration />
-                <p className="text-sm font-semibold text-slate-900">Track your spending</p>
-                <p className="max-w-sm text-sm text-slate-500">Add expenses to see insights and manage your money better.</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Track your spending</p>
+                <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">Add expenses to see insights and manage your money better.</p>
               </div>
             )}
           </Card>

@@ -40,9 +40,9 @@ export function SummaryCard({
         <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneStyle.bg, toneStyle.text)}>
           {icon}
         </span>
-        <span className="text-sm font-medium text-slate-500">{label}</span>
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</span>
       </div>
-      <p className={cn("mt-3 text-2xl font-semibold tabular-nums text-slate-900", valueClassName)}>{value}</p>
+      <p className={cn("mt-3 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50", valueClassName)}>{value}</p>
       {trend && (
         <p
           className={cn(
@@ -54,7 +54,7 @@ export function SummaryCard({
           {trend.label}
         </p>
       )}
-      {!trend && subtext && <p className="mt-1 text-xs text-slate-500">{subtext}</p>}
+      {!trend && subtext && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{subtext}</p>}
     </Card>
   );
 }

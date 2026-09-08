@@ -2,18 +2,6 @@ import { getAccessToken, setAccessToken } from "./token-store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
-// /uploads returns a root-relative path (e.g. "/uploads/{userId}/{file}").
-// Some endpoints (profile avatarUrl) validate that field as an absolute URL,
-// so callers that persist an upload's path elsewhere need it qualified. API_URL
-// itself may be relative too (NEXT_PUBLIC_API_URL="/api", proxied same-origin
-// per next.config.ts) so it isn't enough on its own -- fall back to the
-// browser's own origin to get something actually absolute.
-export function toAbsoluteApiUrl(path: string): string {
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  const base = API_URL.startsWith("http") ? API_URL : `${window.location.origin}${API_URL}`;
-  return `${base}${path}`;
-}
-
 export class ApiError extends Error {
   constructor(
     public readonly status: number,

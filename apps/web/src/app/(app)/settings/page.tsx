@@ -15,6 +15,7 @@ import { DataStorageSection } from "@/components/settings/data-section";
 import { HelpSection } from "@/components/settings/help-section";
 import { AboutSection } from "@/components/settings/about-section";
 import { PlaceholderSection } from "@/components/settings/placeholder-section";
+import { AppearanceSection } from "@/components/settings/appearance-section";
 import {
   UserIcon,
   ShieldIcon,
@@ -45,12 +46,7 @@ const SECTIONS: Section[] = [
     icon: BellIcon,
     render: () => <PlaceholderSection title="Notifications" description="Choose what you get notified about." icon={BellIcon} />,
   },
-  {
-    id: "appearance",
-    label: "Appearance",
-    icon: PaletteIcon,
-    render: () => <PlaceholderSection title="Appearance" description="Customize how Finance looks." icon={PaletteIcon} />,
-  },
+  { id: "appearance", label: "Appearance", icon: PaletteIcon, render: () => <AppearanceSection /> },
   { id: "privacy", label: "Privacy", icon: LockIcon, render: () => <PrivacySection /> },
   {
     id: "linked-accounts",
@@ -81,7 +77,9 @@ function SectionNavList({ activeId, onSelect }: { activeId: string; onSelect: (i
             onClick={() => onSelect(section.id)}
             className={cn(
               "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors",
-              active ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-50",
+              active
+                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300"
+                : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50",
             )}
           >
             <section.icon className="h-4.5 w-4.5 shrink-0" />
@@ -116,16 +114,16 @@ function SettingsContent() {
       <div className="md:hidden">
         {mobileOpen ? (
           <div>
-            <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center gap-3 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+            <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center gap-3 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 dark:border-slate-800 dark:bg-slate-950/95">
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 aria-label="Back to settings"
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
               >
                 <ChevronRightIcon className="h-5 w-5 rotate-180" />
               </button>
-              <p className="truncate text-base font-semibold text-slate-900">{active.label}</p>
+              <p className="truncate text-base font-semibold text-slate-900 dark:text-slate-50">{active.label}</p>
             </div>
             {active.render()}
           </div>
@@ -135,26 +133,26 @@ function SettingsContent() {
             <button
               type="button"
               onClick={() => select("account")}
-              className="mb-4 flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm"
+              className="mb-4 flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
               <Avatar name={displayName} src={user?.profile?.avatarUrl} />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
-                <p className="truncate text-xs text-slate-500">@{user?.usernameDisplay}</p>
+                <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{displayName}</p>
+                <p className="truncate text-xs text-slate-500 dark:text-slate-400">@{user?.usernameDisplay}</p>
               </div>
               <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-400" />
             </button>
-            <Card className="divide-y divide-slate-100 p-0">
+            <Card className="divide-y divide-slate-100 p-0 dark:divide-slate-800">
               {SECTIONS.map((section) => (
                 <button
                   key={section.id}
                   type="button"
                   onClick={() => select(section.id)}
-                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
                   <section.icon className="h-4.5 w-4.5 shrink-0 text-slate-400" />
                   <span className="flex-1">{section.label}</span>
-                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-300" />
+                  <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
                 </button>
               ))}
             </Card>
@@ -166,8 +164,8 @@ function SettingsContent() {
       <div className="hidden md:block">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-            <p className="text-sm text-slate-500">Manage your account and preferences</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Settings</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Manage your account and preferences</p>
           </div>
         </div>
         <div className="grid grid-cols-[220px_1fr] gap-6">

@@ -42,10 +42,10 @@ function GroupsIllustration() {
 function FeatureBlurb({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-indigo-600">{icon}</span>
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-900 text-indigo-600">{icon}</span>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-slate-900">{title}</p>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">{title}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>
       </div>
     </div>
   );
@@ -69,13 +69,13 @@ function GroupRow({ summary, currentUserId }: { summary: GroupSummary; currentUs
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="truncate text-sm font-semibold text-slate-900">{group.name}</p>
+              <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{group.name}</p>
               <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
                 {group.members.length} member{group.members.length === 1 ? "" : "s"}
               </span>
             </div>
-            <p className="mt-0.5 truncate text-sm text-slate-500">{memberNames.join(", ")}</p>
-            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400">
+            <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">{memberNames.join(", ")}</p>
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
               <CalendarIcon className="h-3.5 w-3.5" />
               Created {new Date(group.createdAt).toLocaleDateString()}
             </p>
@@ -84,16 +84,16 @@ function GroupRow({ summary, currentUserId }: { summary: GroupSummary; currentUs
 
         <div className="flex shrink-0 items-center gap-5 sm:gap-8">
           <div className="text-right">
-            <p className="text-xs text-slate-500">You are owed</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">You are owed</p>
             <p className="text-sm font-semibold tabular-nums text-emerald-600">{formatMoney(String(owedMinor), currency)}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-slate-500">You owe</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">You owe</p>
             <p className="text-sm font-semibold tabular-nums text-rose-600">{formatMoney(String(oweMinor), currency)}</p>
           </div>
           <div className="hidden text-right lg:block">
-            <p className="text-xs text-slate-500">Total expenses</p>
-            <p className="text-sm font-semibold tabular-nums text-slate-900">{formatMoney(String(totalExpensesMinor), currency)}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Total expenses</p>
+            <p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatMoney(String(totalExpensesMinor), currency)}</p>
           </div>
           <div className="flex items-center gap-2">
             <Link href={`/groups/${group.id}`}>
@@ -106,14 +106,14 @@ function GroupRow({ summary, currentUserId }: { summary: GroupSummary; currentUs
                 type="button"
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-label={`More options for ${group.name}`}
-                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+                className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
               >
                 <MoreVerticalIcon className="h-4 w-4" />
               </button>
               {menuOpen && (
-                <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg">
+                <div className="absolute right-0 z-10 mt-1 w-48 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-1 shadow-lg">
                   {isOwner ? (
-                    <p className="px-3 py-2 text-xs text-slate-400">You own this group</p>
+                    <p className="px-3 py-2 text-xs text-slate-400 dark:text-slate-500">You own this group</p>
                   ) : (
                     <button
                       type="button"
@@ -194,7 +194,7 @@ export default function GroupsPage() {
             type="button"
             onClick={() => setShowForm((v) => !v)}
             aria-label={showForm ? "Cancel" : "New group"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
           </button>
@@ -202,8 +202,8 @@ export default function GroupsPage() {
       />
       <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Groups</h1>
-          <p className="text-sm text-slate-500">Shared expenses with a set of friends, like a trip or a household.</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Groups</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Shared expenses with a set of friends, like a trip or a household.</p>
         </div>
         <Button onClick={() => setShowForm((v) => !v)} className="shrink-0 rounded-xl">
           {showForm ? (
@@ -229,12 +229,12 @@ export default function GroupsPage() {
                 <Label>Members</Label>
                 <div className="space-y-1.5">
                   {friends.items.map((f) => (
-                    <label key={f.user.id} className="flex items-center gap-2 text-sm text-slate-700">
+                    <label key={f.user.id} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                       <input
                         type="checkbox"
                         checked={memberIds.includes(f.user.id)}
                         onChange={() => toggleMember(f.user.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500"
                       />
                       {f.user.displayName ?? f.user.usernameDisplay}
                     </label>
@@ -292,18 +292,18 @@ export default function GroupsPage() {
           </div>
 
           <Card className="overflow-visible p-0">
-            <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative sm:max-w-xs sm:flex-1">
-                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search groups..."
-                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
                 />
               </div>
-              <div className="flex shrink-0 items-center gap-2 text-sm text-slate-500">
+              <div className="flex shrink-0 items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                 <span>Sort by</span>
                 <Select value={sort} onChange={(e) => setSort(e.target.value as SortKey)} className="w-44">
                   <option value="recent">Recently created</option>
@@ -325,7 +325,7 @@ export default function GroupsPage() {
                 />
               </div>
             ) : (
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                 {visibleSummaries.map((summary) => (
                   <GroupRow key={summary.group.id} summary={summary} currentUserId={user?.id} />
                 ))}
@@ -337,8 +337,8 @@ export default function GroupsPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
               <GroupsIllustration />
               <div>
-                <p className="text-base font-semibold text-slate-900">Simplify shared expenses</p>
-                <p className="text-sm text-slate-500">Create a group, add members, and track who owes what.</p>
+                <p className="text-base font-semibold text-slate-900 dark:text-slate-50">Simplify shared expenses</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Create a group, add members, and track who owes what.</p>
                 <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <FeatureBlurb
                     icon={<PlusIcon className="h-4 w-4" />}
@@ -358,7 +358,7 @@ export default function GroupsPage() {
                 </div>
               </div>
             </div>
-            <Button variant="secondary" className="shrink-0 self-start bg-white lg:self-center">
+            <Button variant="secondary" className="shrink-0 self-start bg-white dark:bg-slate-900 lg:self-center">
               Learn more
             </Button>
           </Card>

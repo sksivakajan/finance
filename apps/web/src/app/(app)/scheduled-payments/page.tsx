@@ -42,7 +42,7 @@ const STATUS_META: Record<Status, { label: string; badge: string; dot: string }>
   DUE: { label: "Due", badge: "bg-amber-50 text-amber-700", dot: "bg-amber-500" },
   PAID: { label: "Paid", badge: "bg-emerald-50 text-emerald-700", dot: "bg-emerald-500" },
   OVERDUE: { label: "Overdue", badge: "bg-red-50 text-red-700", dot: "bg-red-500" },
-  CANCELLED: { label: "Cancelled", badge: "bg-slate-100 text-slate-400", dot: "bg-slate-300" },
+  CANCELLED: { label: "Cancelled", badge: "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500", dot: "bg-slate-300" },
 };
 
 const TABS: { key: Tab; label: string; icon?: (props: React.SVGProps<SVGSVGElement>) => React.ReactElement }[] = [
@@ -167,7 +167,7 @@ export default function ScheduledPaymentsPage() {
             type="button"
             onClick={() => setShowForm((v) => !v)}
             aria-label={showForm ? "Cancel" : "Add payment"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
           </button>
@@ -175,8 +175,8 @@ export default function ScheduledPaymentsPage() {
       />
       <div className="hidden items-center justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Scheduled payments</h1>
-          <p className="text-sm text-slate-500">Bills and payments you know are coming.</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Scheduled payments</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Bills and payments you know are coming.</p>
         </div>
         <Button onClick={() => setShowForm((v) => !v)}>
           {showForm ? (
@@ -250,12 +250,12 @@ export default function ScheduledPaymentsPage() {
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-100 text-violet-600">
                       <CalendarCheckIcon className="h-5 w-5" />
                     </span>
-                    <span className="text-sm font-medium text-slate-500">Total scheduled</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Total scheduled</span>
                   </div>
-                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900">
+                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatMoney(stats.totalMinor, currency)}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">{stats.totalCount} payments</p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{stats.totalCount} payments</p>
                 </div>
                 <Sparkline tone="#7c3aed" />
               </div>
@@ -268,9 +268,9 @@ export default function ScheduledPaymentsPage() {
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
                       <CheckCircleIcon className="h-5 w-5" />
                     </span>
-                    <span className="text-sm font-medium text-slate-500">Paid</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Paid</span>
                   </div>
-                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900">{stats.paidCount} payments</p>
+                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">{stats.paidCount} payments</p>
                   <p className="mt-1 text-xs font-medium tabular-nums text-emerald-600">
                     {formatMoney(stats.paidMinor, currency)}
                   </p>
@@ -286,9 +286,9 @@ export default function ScheduledPaymentsPage() {
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
                       <ClockIcon className="h-5 w-5" />
                     </span>
-                    <span className="text-sm font-medium text-slate-500">Upcoming</span>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Upcoming</span>
                   </div>
-                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900">{stats.upcomingCount} payments</p>
+                  <p className="mt-3 text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">{stats.upcomingCount} payments</p>
                   <p className="mt-1 text-xs font-medium tabular-nums text-amber-600">
                     {formatMoney(stats.upcomingMinor, currency)}
                   </p>
@@ -302,23 +302,23 @@ export default function ScheduledPaymentsPage() {
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-sky-100 text-sky-600">
                   <CalendarIcon className="h-5 w-5" />
                 </span>
-                <span className="text-sm font-medium text-slate-500">Next payment due</span>
+                <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Next payment due</span>
               </div>
               {stats.next ? (
                 <>
                   <p className="mt-3 text-xl font-semibold text-sky-600">{formatDate(stats.next.dueDate)}</p>
-                  <p className="mt-1 text-xs tabular-nums text-slate-500">
+                  <p className="mt-1 text-xs tabular-nums text-slate-500 dark:text-slate-400">
                     {formatMoney(stats.next.amountMinor, stats.next.currency)}
                   </p>
                 </>
               ) : (
-                <p className="mt-3 text-sm text-slate-400">Nothing due</p>
+                <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">Nothing due</p>
               )}
             </Card>
           </div>
 
           <Card className="p-0">
-            <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 {TABS.map((t) => {
                   const active = tab === t.key;
@@ -333,10 +333,10 @@ export default function ScheduledPaymentsPage() {
                         t.key === "ALL"
                           ? active
                             ? "bg-indigo-600 text-white"
-                            : "bg-white text-slate-600 hover:bg-slate-100"
+                            : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                           : active
-                            ? "bg-slate-100 text-slate-900"
-                            : "text-slate-500 hover:bg-slate-50",
+                            ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-50"
+                            : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60",
                       )}
                     >
                       {Icon && <Icon className="h-4 w-4" />}
@@ -348,7 +348,7 @@ export default function ScheduledPaymentsPage() {
 
               <div className="flex items-center gap-2">
                 <div className="relative">
-                  <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -357,15 +357,15 @@ export default function ScheduledPaymentsPage() {
                   />
                 </div>
                 <details ref={filterDetailsRef} className="relative">
-                  <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  <summary className="flex cursor-pointer list-none items-center gap-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60">
                     Filter
                     {recurrenceFilter !== "ALL" && (
                       <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-700">1</span>
                     )}
                     <ChevronDownIcon className="h-3.5 w-3.5" />
                   </summary>
-                  <div className="absolute right-0 z-10 mt-2 w-44 rounded-lg border border-slate-200 bg-white p-1.5 shadow-lg">
-                    <p className="px-2 py-1 text-xs font-medium text-slate-400">Recurrence</p>
+                  <div className="absolute right-0 z-10 mt-2 w-44 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-1.5 shadow-lg">
+                    <p className="px-2 py-1 text-xs font-medium text-slate-400 dark:text-slate-500">Recurrence</p>
                     {(["ALL", "NONE", "WEEKLY", "MONTHLY", "YEARLY", "DAILY"] as RecurrenceFilter[]).map((value) => (
                       <button
                         key={value}
@@ -373,7 +373,7 @@ export default function ScheduledPaymentsPage() {
                         onClick={() => selectRecurrenceFilter(value)}
                         className={cn(
                           "block w-full rounded-md px-2 py-1.5 text-left text-sm",
-                          recurrenceFilter === value ? "bg-indigo-50 text-indigo-700" : "text-slate-600 hover:bg-slate-50",
+                          recurrenceFilter === value ? "bg-indigo-50 text-indigo-700" : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60",
                         )}
                       >
                         {value === "ALL" ? "All" : value === "NONE" ? "One-time" : value.charAt(0) + value.slice(1).toLowerCase()}
@@ -390,7 +390,7 @@ export default function ScheduledPaymentsPage() {
               </div>
             ) : (
               <>
-                <ul className="divide-y divide-slate-100 md:hidden">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-800 md:hidden">
                   {filteredItems.map((payment, index) => {
                     const meta = STATUS_META[payment.status];
                     const tone = ROW_TONES[index % ROW_TONES.length];
@@ -407,13 +407,13 @@ export default function ScheduledPaymentsPage() {
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-2">
-                            <p className="truncate text-sm font-medium text-slate-900">{payment.name}</p>
-                            <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
+                            <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{payment.name}</p>
+                            <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                               {formatMoney(payment.amountMinor, payment.currency)}
                             </span>
                           </div>
                           <div className="mt-0.5 flex items-center justify-between gap-2">
-                            <p className="text-xs text-slate-500">{formatDate(payment.dueDate)}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{formatDate(payment.dueDate)}</p>
                             <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium", meta.badge)}>
                               {meta.label.toUpperCase()}
                             </span>
@@ -431,7 +431,7 @@ export default function ScheduledPaymentsPage() {
                               <button
                                 type="button"
                                 onClick={() => void removePayment.mutateAsync(payment.id)}
-                                className="text-xs font-medium text-slate-400 hover:text-red-600"
+                                className="text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                                 aria-label={`Cancel ${payment.name}`}
                               >
                                 Cancel
@@ -446,30 +446,30 @@ export default function ScheduledPaymentsPage() {
                 <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-100">
-                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">
+                    <tr className="border-b border-slate-100 dark:border-slate-800">
+                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         Payment
                       </th>
-                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">
+                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         Due date
                       </th>
-                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">
+                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         Amount
                       </th>
-                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400">
+                      <th className="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         Status
                       </th>
-                      <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-400">
+                      <th className="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredItems.map((payment, index) => {
                       const meta = STATUS_META[payment.status];
                       const tone = ROW_TONES[index % ROW_TONES.length];
                       return (
-                        <tr key={payment.id} className="hover:bg-slate-50/60">
+                        <tr key={payment.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/60/60">
                           <td className="px-5 py-3">
                             <div className="flex items-center gap-3">
                               <span
@@ -483,21 +483,21 @@ export default function ScheduledPaymentsPage() {
                               </span>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <p className="truncate text-sm font-medium text-slate-900">{payment.name}</p>
+                                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{payment.name}</p>
                                   <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", meta.badge)}>
                                     {meta.label.toUpperCase()}
                                   </span>
                                 </div>
-                                <p className="text-xs text-slate-500">Due {formatDate(payment.dueDate)}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Due {formatDate(payment.dueDate)}</p>
                               </div>
                             </div>
                           </td>
-                          <td className="whitespace-nowrap px-5 py-3 text-slate-600">{formatDate(payment.dueDate)}</td>
-                          <td className="whitespace-nowrap px-5 py-3 font-medium tabular-nums text-slate-900">
+                          <td className="whitespace-nowrap px-5 py-3 text-slate-600 dark:text-slate-300">{formatDate(payment.dueDate)}</td>
+                          <td className="whitespace-nowrap px-5 py-3 font-medium tabular-nums text-slate-900 dark:text-slate-50">
                             {formatMoney(payment.amountMinor, payment.currency)}
                           </td>
                           <td className="whitespace-nowrap px-5 py-3">
-                            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700">
+                            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-200">
                               <span className={cn("h-1.5 w-1.5 rounded-full", meta.dot)} />
                               {meta.label}
                             </span>
@@ -517,7 +517,7 @@ export default function ScheduledPaymentsPage() {
                               <button
                                 type="button"
                                 onClick={() => void removePayment.mutateAsync(payment.id)}
-                                className="text-xs font-medium text-slate-400 hover:text-red-600"
+                                className="text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                                 aria-label={`Cancel ${payment.name}`}
                               >
                                 Cancel
@@ -533,7 +533,7 @@ export default function ScheduledPaymentsPage() {
               </>
             )}
 
-            <div className="flex items-center justify-center gap-1.5 border-t border-slate-100 py-3 text-xs text-slate-400">
+            <div className="flex items-center justify-center gap-1.5 border-t border-slate-100 dark:border-slate-800 py-3 text-xs text-slate-400 dark:text-slate-500">
               <ShieldCheckIcon className="h-3.5 w-3.5" />
               Payments are secure and encrypted
             </div>

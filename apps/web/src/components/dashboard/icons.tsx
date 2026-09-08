@@ -417,3 +417,40 @@ export function XIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function SunIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <circle cx="12" cy="12" r="4" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 2.75v2M12 19.25v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2.75 12h2M19.25 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+      />
+    </svg>
+  );
+}
+
+export function MoonIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"
+      />
+    </svg>
+  );
+}
+
+export function MonitorIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base(props)}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M3.75 4.5h16.5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H3.75a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1ZM8.25 20.5h7.5M12 16.5v4"
+      />
+    </svg>
+  );
+}

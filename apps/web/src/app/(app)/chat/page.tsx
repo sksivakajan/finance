@@ -19,8 +19,8 @@ export default function ChatPage() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-8 text-center">
       <ChatPlaceholderIllustration />
-      <p className="text-sm font-semibold text-slate-900">Select a conversation</p>
-      <p className="max-w-xs text-sm text-slate-500">
+      <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Select a conversation</p>
+      <p className="max-w-xs text-sm text-slate-500 dark:text-slate-400">
         Pick someone from the list, or head to your friends list to start a new chat.
       </p>
     </div>

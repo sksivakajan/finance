@@ -65,7 +65,7 @@ function recurrenceBadge(income: IncomeRecord): { label: string; className: stri
     YEARLY: "bg-violet-50 text-violet-700",
   };
   const labels: Record<string, string> = { DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly", YEARLY: "Yearly" };
-  return { label: labels[income.recurrenceRule] ?? income.recurrenceRule, className: styles[income.recurrenceRule] ?? "bg-slate-100 text-slate-600" };
+  return { label: labels[income.recurrenceRule] ?? income.recurrenceRule, className: styles[income.recurrenceRule] ?? "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" };
 }
 
 function yearRange(): { from: string; to: string } {
@@ -202,7 +202,7 @@ export default function IncomePage() {
             type="button"
             onClick={() => (showForm ? closeForm() : openCreateForm())}
             aria-label={showForm ? "Cancel" : "Add income"}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className={cn("h-5 w-5 transition-transform", showForm && "rotate-45")} />
           </button>
@@ -210,8 +210,8 @@ export default function IncomePage() {
       />
       <div className="hidden flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Income</h1>
-          <p className="text-sm text-slate-500">Track all your income sources in one place</p>
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Income</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Track all your income sources in one place</p>
         </div>
         <Button onClick={() => (showForm ? closeForm() : openCreateForm())}>{showForm ? "Cancel" : "+ Add Income"}</Button>
       </div>
@@ -262,7 +262,7 @@ export default function IncomePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <div className="mb-2 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Income Overview</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Income Overview</CardTitle>
             <Select value={chartMonths} onChange={(e) => setChartMonths(Number(e.target.value))} className="w-40">
               {CHART_MONTH_OPTIONS.map((r) => (
                 <option key={r.months} value={r.months}>
@@ -271,10 +271,10 @@ export default function IncomePage() {
               ))}
             </Select>
           </div>
-          <p className="text-2xl font-semibold tabular-nums text-slate-900">
+          <p className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">
             {formatMoney((chartSeries ?? []).reduce((sum, p) => sum + Number(p.amountMinor), 0).toString(), currency)}
           </p>
-          <p className="text-xs text-slate-500">Total income this period</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Total income this period</p>
           {chartLoading || !chartSeries ? (
             <div className="flex h-52 items-center justify-center">
               <Spinner />
@@ -285,7 +285,7 @@ export default function IncomePage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardTitle className="mb-4 text-base font-semibold text-slate-900">Income by Category</CardTitle>
+          <CardTitle className="mb-4 text-base font-semibold text-slate-900 dark:text-slate-50">Income by Category</CardTitle>
           {categoriesLoading || !categoryBreakdown ? (
             <div className="flex justify-center py-8">
               <Spinner />
@@ -335,12 +335,12 @@ export default function IncomePage() {
               <Input id="date" type="date" required value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} />
             </div>
             <div className="sm:col-span-2">
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                 <input
                   type="checkbox"
                   checked={form.isRecurring}
                   onChange={(e) => setForm((f) => ({ ...f, isRecurring: e.target.checked }))}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500"
                 />
                 This income repeats
               </label>
@@ -369,8 +369,8 @@ export default function IncomePage() {
       )}
 
       <Card id="all-income" className="scroll-mt-6 p-0">
-        <div className="flex flex-col gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-base font-semibold text-slate-900">All Income</CardTitle>
+        <div className="flex flex-col gap-3 border-b border-slate-100 dark:border-slate-800 p-5 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">All Income</CardTitle>
           <div className="flex gap-2">
             <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-40">
               <option value="">All Categories</option>
@@ -406,7 +406,7 @@ export default function IncomePage() {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-xs font-medium uppercase tracking-wide text-slate-400">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
                   <th className="px-5 py-3 font-medium">Source</th>
                   <th className="px-5 py-3 font-medium">Category</th>
                   <th className="px-5 py-3 font-medium">Amount</th>
@@ -415,15 +415,15 @@ export default function IncomePage() {
                   <th className="px-5 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredItems.map((income) => {
                   const category = income.categoryId ? categoryMap.get(income.categoryId) : undefined;
                   const badge = recurrenceBadge(income);
                   return (
                     <tr key={income.id}>
                       <td className="px-5 py-3">
-                        <p className="font-medium text-slate-900">{income.source}</p>
-                        {income.description && <p className="text-xs text-slate-500">{income.description}</p>}
+                        <p className="font-medium text-slate-900 dark:text-slate-50">{income.source}</p>
+                        {income.description && <p className="text-xs text-slate-500 dark:text-slate-400">{income.description}</p>}
                       </td>
                       <td className="px-5 py-3">
                         {category ? (
@@ -431,11 +431,11 @@ export default function IncomePage() {
                             {category.name}
                           </span>
                         ) : (
-                          <span className="text-xs text-slate-400">—</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500">—</span>
                         )}
                       </td>
                       <td className="px-5 py-3 tabular-nums font-medium text-emerald-700">+{formatMoney(income.amountMinor, income.currency)}</td>
-                      <td className="px-5 py-3 text-slate-500">
+                      <td className="px-5 py-3 text-slate-500 dark:text-slate-400">
                         {new Date(income.date).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" })}
                       </td>
                       <td className="px-5 py-3">
@@ -446,7 +446,7 @@ export default function IncomePage() {
                           <button
                             type="button"
                             onClick={() => openEditForm(income)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-indigo-600"
+                            className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-indigo-600"
                             aria-label={`Edit income from ${income.source}`}
                           >
                             <PencilIcon className="h-4 w-4" />
@@ -454,7 +454,7 @@ export default function IncomePage() {
                           <button
                             type="button"
                             onClick={() => void removeIncome.mutateAsync(income.id)}
-                            className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                            className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-red-50 hover:text-red-600"
                             aria-label={`Delete income from ${income.source}`}
                           >
                             <TrashIcon className="h-4 w-4" />

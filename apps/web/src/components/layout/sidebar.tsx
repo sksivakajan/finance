@@ -7,6 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useAuth } from "@/lib/auth-context";
 import { NotificationBell } from "./notification-bell";
+import { ThemeToggleButton } from "@/components/ui/theme-toggle-button";
+import { Avatar } from "@/components/ui/avatar";
 import { HomeIcon, ChatBubbleIcon, LogoutIcon, SidebarIllustration } from "./icons";
 import {
   TrendUpIcon,
@@ -48,7 +50,6 @@ function ProfileMenu() {
   const panelRef = useRef<HTMLDivElement | null>(null);
 
   const displayName = user?.profile?.displayName || user?.usernameDisplay || "";
-  const initial = displayName.charAt(0).toUpperCase() || "?";
 
   function toggle() {
     if (open) {
@@ -109,9 +110,7 @@ function ProfileMenu() {
         aria-expanded={open}
         className="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left backdrop-blur-sm transition-colors hover:bg-white/15"
       >
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 text-sm font-semibold">
-          {initial}
-        </span>
+        <Avatar name={displayName} src={user?.profile?.avatarUrl} size="sm" className="h-9 w-9 text-sm" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-white">{displayName}</p>
           <p className="truncate text-xs text-white/50">@{user?.usernameDisplay}</p>
@@ -127,7 +126,7 @@ function ProfileMenu() {
             ref={panelRef}
             style={{ bottom: coords.bottom, left: coords.left, width: MENU_WIDTH }}
             className={cn(
-              "fixed z-50 origin-bottom rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg transition-[opacity,transform] duration-150 ease-out",
+              "fixed z-50 origin-bottom rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg transition-[opacity,transform] duration-150 ease-out dark:border-slate-700 dark:bg-slate-900",
               entered ? "translate-y-0 scale-100 opacity-100" : "translate-y-1 scale-95 opacity-0",
             )}
           >
@@ -136,17 +135,17 @@ function ProfileMenu() {
                 key={item.label}
                 type="button"
                 onClick={item.onClick}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
               >
                 <item.icon className="h-4 w-4 text-slate-400" />
                 {item.label}
               </button>
             ))}
-            <div className="my-1 h-px bg-slate-100" />
+            <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
             <button
               type="button"
               onClick={() => void logout()}
-              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50"
+              className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
             >
               <LogoutIcon className="h-4 w-4" />
               Log out
@@ -172,7 +171,10 @@ export function Sidebar() {
           </span>
           <span className="text-base font-semibold">Finance</span>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-1">
+          <ThemeToggleButton tone="dark" />
+          <NotificationBell />
+        </div>
       </div>
 
       <nav className="relative z-10 flex-1 space-y-1 overflow-y-auto px-3">

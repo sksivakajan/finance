@@ -42,7 +42,11 @@ function todayIsoDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function Avatar({ name, colorKey }: { name: string; colorKey: string }) {
+function Avatar({ name, colorKey, src }: { name: string; colorKey: string; src?: string | null }) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element -- proxied same-origin /uploads URL, not an <Image>-optimizable remote host
+    return <img src={src} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />;
+  }
   const palette = paletteForKey(colorKey);
   return (
     <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold", palette.chip)}>
@@ -101,7 +105,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   if (isError || !group) {
     return (
       <div className="space-y-4">
-        <Link href="/groups" className="text-sm font-medium text-slate-500 hover:text-slate-700">
+        <Link href="/groups" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200">
           ← Back to groups
         </Link>
         <EmptyState title="Group not found" description="This group doesn't exist, or you're not a member of it." />
@@ -158,7 +162,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/groups" className="text-sm font-medium text-slate-500 hover:text-slate-700">
+        <Link href="/groups" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:text-slate-200">
           ← Back to groups
         </Link>
         <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -168,12 +172,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             </span>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-semibold text-slate-900">{group.name}</h1>
+                <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">{group.name}</h1>
                 <span className="shrink-0 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
                   {group.members.length} member{group.members.length === 1 ? "" : "s"}
                 </span>
               </div>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400">
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500">
                 <CalendarIcon className="h-3.5 w-3.5" />
                 Created {new Date(group.createdAt).toLocaleDateString()}
               </p>
@@ -259,33 +263,33 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       )}
 
       <Card className="p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
-          <CardTitle className="text-base font-semibold text-slate-900">Members</CardTitle>
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Members</CardTitle>
           <Button size="sm" variant="secondary" onClick={() => setShowAddMember((v) => !v)}>
             {showAddMember ? "Cancel" : "Add member"}
           </Button>
         </div>
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-slate-100 dark:divide-slate-800">
           {group.members.map((m) => {
             const name = m.displayName ?? m.usernameDisplay;
             return (
               <li key={m.userId} className="flex items-center justify-between gap-3 px-5 py-3.5">
                 <div className="flex min-w-0 items-center gap-3">
-                  <Avatar name={name} colorKey={m.userId} />
+                  <Avatar name={name} colorKey={m.userId} src={m.avatarUrl} />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">
+                    <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">
                       {m.userId === user?.id ? "You" : name}
                     </p>
-                    <p className="truncate text-xs text-slate-500">@{m.usernameDisplay}</p>
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">@{m.usernameDisplay}</p>
                   </div>
                 </div>
                 {m.role === "OWNER" ? (
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">Owner</span>
+                  <span className="shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-500 dark:text-slate-400">Owner</span>
                 ) : (
                   <button
                     type="button"
                     onClick={() => void removeMember.mutateAsync(m.userId)}
-                    className="shrink-0 text-xs font-medium text-slate-400 hover:text-red-600"
+                    className="shrink-0 text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                   >
                     Remove
                   </button>
@@ -295,9 +299,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
           })}
         </ul>
         {showAddMember && (
-          <div className="border-t border-slate-100 p-5">
+          <div className="border-t border-slate-100 dark:border-slate-800 p-5">
             {nonMembers.length === 0 ? (
-              <p className="text-sm text-slate-500">All your friends are already in this group.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">All your friends are already in this group.</p>
             ) : (
               <form onSubmit={handleAddMember} className="flex items-end gap-2">
                 <div className="flex-1">
@@ -322,15 +326,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <div className="border-b border-slate-100 p-5">
-          <CardTitle className="text-base font-semibold text-slate-900">Group expenses</CardTitle>
+        <div className="border-b border-slate-100 dark:border-slate-800 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Group expenses</CardTitle>
         </div>
         {!expenses || expenses.items.length === 0 ? (
           <div className="p-5">
             <EmptyState title="No expenses yet" description="Add the group's first shared expense above." />
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
             {expenses.items.map((e, i) => {
               const tone = ROW_TONES[i % ROW_TONES.length];
               return (
@@ -340,11 +344,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                       <WalletIcon className="h-4 w-4" />
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{e.merchant ?? "Expense"}</p>
-                      <p className="text-xs text-slate-500">{new Date(e.date).toLocaleDateString()}</p>
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{e.merchant ?? "Expense"}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(e.date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
+                  <span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatMoney(e.amountMinor, e.currency)}
                   </span>
                 </li>
@@ -355,8 +359,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 p-5">
-          <CardTitle className="text-base font-semibold text-slate-900">Group balances</CardTitle>
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 p-5">
+          <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Group balances</CardTitle>
           <Button size="sm" variant="secondary" onClick={() => setShowOptimize((v) => !v)}>
             {showOptimize ? "Hide" : "Suggest settlements"}
           </Button>
@@ -367,7 +371,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
             <EmptyState title="All settled up" description="Nobody owes anybody in this group right now." />
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
             {groupBalances.items
               .filter((row) => row.balances.length > 0)
               .map((row) => {
@@ -375,8 +379,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
                 return (
                   <li key={row.user?.id} className="flex items-center justify-between gap-3 px-5 py-3.5">
                     <div className="flex min-w-0 items-center gap-3">
-                      <Avatar name={name} colorKey={row.user?.id ?? name} />
-                      <p className="truncate text-sm font-medium text-slate-900">{name}</p>
+                      <Avatar name={name} colorKey={row.user?.id ?? name} src={row.user?.avatarUrl} />
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{name}</p>
                     </div>
                     <div className="shrink-0 text-right">
                       {row.balances.map((b) => (
@@ -397,20 +401,20 @@ export default function GroupDetailPage({ params }: { params: Promise<{ groupId:
         )}
 
         {showOptimize && (
-          <div className="border-t border-slate-100 p-5">
+          <div className="border-t border-slate-100 dark:border-slate-800 p-5">
             {optimizeLoading ? (
               <div className="flex justify-center py-6">
                 <Spinner />
               </div>
             ) : !optimize || optimize.transfers.length === 0 ? (
-              <p className="text-sm text-slate-500">Nobody owes anybody in this group right now.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Nobody owes anybody in this group right now.</p>
             ) : (
               <ul className="space-y-2">
                 {optimize.transfers.map((t, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-slate-700">
-                    <span className="font-medium text-slate-900">{t.from?.displayName ?? t.from?.usernameDisplay}</span>
-                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-slate-400" />
-                    <span className="font-medium text-slate-900">{t.to?.displayName ?? t.to?.usernameDisplay}</span>
+                  <li key={i} className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <span className="font-medium text-slate-900 dark:text-slate-50">{t.from?.displayName ?? t.from?.usernameDisplay}</span>
+                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
+                    <span className="font-medium text-slate-900 dark:text-slate-50">{t.to?.displayName ?? t.to?.usernameDisplay}</span>
                     <span className="ml-auto shrink-0 font-semibold tabular-nums text-indigo-600">
                       {formatMoney(t.amountMinor, optimize.currency)}
                     </span>

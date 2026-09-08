@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { avatarUrlSchema } from "./user.js";
 
 export const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  avatarUrl: z.string().trim().url().optional(),
+  avatarUrl: avatarUrlSchema.optional(),
   memberUserIds: z.array(z.string().min(1)).default([]),
 });
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;

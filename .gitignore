@@ -26,3 +26,4 @@ apps/api/src/generated/
 
 # Portable local dev services (Postgres/Redis binaries + data), see scripts/dev-db.md
 .tools/
+dump.rdb

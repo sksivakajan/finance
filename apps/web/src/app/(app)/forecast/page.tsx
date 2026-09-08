@@ -114,11 +114,11 @@ function StatCard({
           <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneStyle.bg, toneStyle.text)}>
             {icon}
           </span>
-          <span className="text-sm font-medium text-slate-500">{label}</span>
+          <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</span>
         </div>
         <MiniSparkline data={sparkline} color={sparklineColor} />
       </div>
-      <p className={cn("mt-3 text-lg font-semibold tabular-nums", valueClassName ?? "text-slate-900")}>{value}</p>
+      <p className={cn("mt-3 text-lg font-semibold tabular-nums", valueClassName ?? "text-slate-900 dark:text-slate-50")}>{value}</p>
     </Card>
   );
 }
@@ -127,10 +127,10 @@ function ForecastIllustration({ className }: { className?: string }) {
   return (
     <div className={cn("relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-100 to-indigo-50", className)}>
       <div className="flex h-full w-full items-center justify-center gap-2 p-4">
-        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-violet-600 shadow-sm">
+        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 text-violet-600 shadow-sm">
           <TrendUpIcon className="h-6 w-6" />
         </span>
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 text-indigo-600 shadow-sm">
           <CalendarIcon className="h-7 w-7" />
         </span>
       </div>
@@ -167,17 +167,17 @@ export default function ForecastPage() {
       <MobileHeader title="Forecast" />
       <div className="hidden items-center justify-between md:flex">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Forecast</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">Forecast</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             A projected cash position from your recurring income, expenses, scheduled payments, and loans.
           </p>
         </div>
         <div className="relative">
-          <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
           <Select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="w-48 appearance-none border-slate-200 py-2 pl-9 pr-9 font-medium shadow-sm"
+            className="w-48 appearance-none border-slate-200 dark:border-slate-700 py-2 pl-9 pr-9 font-medium shadow-sm"
           >
             {HORIZON_OPTIONS.map((opt) => (
               <option key={opt.days} value={opt.days}>
@@ -188,11 +188,11 @@ export default function ForecastPage() {
         </div>
       </div>
       <div className="relative md:hidden">
-        <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <CalendarIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
         <Select
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
-          className="w-full appearance-none border-slate-200 py-2 pl-9 pr-9 font-medium shadow-sm"
+          className="w-full appearance-none border-slate-200 dark:border-slate-700 py-2 pl-9 pr-9 font-medium shadow-sm"
         >
           {HORIZON_OPTIONS.map((opt) => (
             <option key={opt.days} value={opt.days}>
@@ -255,7 +255,7 @@ export default function ForecastPage() {
             />
           ) : (
             <Card className="p-0">
-              <ul className="divide-y divide-slate-100">
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                 {data.points.map((p, i) => {
                   const Icon = KIND_ICON[p.kind] ?? WalletIcon;
                   const tone = TONE_STYLES[KIND_TONE[p.kind] ?? "violet"];
@@ -265,19 +265,19 @@ export default function ForecastPage() {
                         <Icon className="h-5 w-5" />
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-slate-900">{p.label}</p>
-                        <p className="text-xs text-slate-500">
+                        <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{p.label}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
                           {new Date(p.date).toLocaleDateString()} · {KIND_LABELS[p.kind] ?? p.kind}
                         </p>
                       </div>
                       <div className="text-right">
                         <p
-                          className={`text-sm font-medium tabular-nums ${BigInt(p.amountMinor) >= 0n ? "text-emerald-700" : "text-slate-900"}`}
+                          className={`text-sm font-medium tabular-nums ${BigInt(p.amountMinor) >= 0n ? "text-emerald-700" : "text-slate-900 dark:text-slate-50"}`}
                         >
                           {BigInt(p.amountMinor) >= 0n ? "+" : ""}
                           {formatMoney(p.amountMinor, currency)}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
                           Balance {formatMoney(p.projectedBalanceMinor, currency)}
                         </p>
                       </div>
@@ -291,14 +291,14 @@ export default function ForecastPage() {
 
           <Card className="relative overflow-hidden">
             <div className="lg:pr-40">
-              <h3 className="text-base font-semibold text-slate-900">Forecast breakdown</h3>
+              <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Forecast breakdown</h3>
               <div className="mt-4 grid grid-cols-3 gap-6">
                 <div>
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-violet-100 text-violet-700">
                     <ArrowDownIcon className="h-5 w-5" />
                   </span>
-                  <p className="mt-3 text-sm text-slate-500">Total income</p>
-                  <p className="text-base font-semibold tabular-nums text-slate-900">
+                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Total income</p>
+                  <p className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatMoney(totalIncome.toString(), currency)}
                   </p>
                 </div>
@@ -306,8 +306,8 @@ export default function ForecastPage() {
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700">
                     <ArrowUpIcon className="h-5 w-5" />
                   </span>
-                  <p className="mt-3 text-sm text-slate-500">Total expenses</p>
-                  <p className="text-base font-semibold tabular-nums text-slate-900">
+                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Total expenses</p>
+                  <p className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatMoney(totalExpenses.toString(), currency)}
                   </p>
                 </div>
@@ -315,15 +315,15 @@ export default function ForecastPage() {
                   <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-100 text-sky-700">
                     <CalendarIcon className="h-5 w-5" />
                   </span>
-                  <p className="mt-3 text-sm text-slate-500">Scheduled payments</p>
-                  <p className="text-base font-semibold tabular-nums text-slate-900">
+                  <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Scheduled payments</p>
+                  <p className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-50">
                     {formatMoney(scheduledPayments.toString(), currency)}
                   </p>
                 </div>
               </div>
 
-              <div className="mt-6 border-t border-slate-100 pt-4">
-                <p className="text-sm text-slate-500">Projected cash position in {data.horizonDays} days</p>
+              <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Projected cash position in {data.horizonDays} days</p>
                 <p className="mt-1 text-3xl font-bold text-violet-600">
                   {formatMoney(data.projectedEndingBalanceMinor, currency)}
                 </p>
@@ -339,12 +339,12 @@ export default function ForecastPage() {
                 <InfoIcon className="h-5 w-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-slate-900">How this works</p>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">How this works</p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                   We project your cash position using your recurring income, expenses, scheduled payments, and loan
                   repayments.
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Actual results may vary based on changes you make or transactions not yet recorded.
                 </p>
               </div>

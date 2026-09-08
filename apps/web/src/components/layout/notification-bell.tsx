@@ -106,7 +106,7 @@ export function NotificationBell({ tone = "dark" }: { tone?: "dark" | "light" })
         className={cn(
           "relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
           tone === "light"
-            ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
             : "text-white/70 hover:bg-white/10 hover:text-white",
         )}
       >
@@ -125,13 +125,13 @@ export function NotificationBell({ tone = "dark" }: { tone?: "dark" | "light" })
             ref={panelRef}
             style={{ top: coords.top, left: coords.left, width: `min(${PANEL_WIDTH}px, 85vw)` }}
             className={cn(
-              "fixed z-50 origin-top rounded-xl border border-slate-200 bg-white p-2 shadow-lg transition-[opacity,transform] duration-150 ease-out",
+              "fixed z-50 origin-top rounded-xl border border-slate-200 bg-white p-2 shadow-lg transition-[opacity,transform] duration-150 ease-out dark:border-slate-700 dark:bg-slate-900",
               entered ? "translate-y-0 scale-100 opacity-100" : "-translate-y-1 scale-95 opacity-0",
             )}
           >
-            <p className="px-2 py-1.5 text-xs font-medium text-slate-500">Notifications</p>
+            <p className="px-2 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Notifications</p>
             {!notifications || notifications.items.length === 0 ? (
-              <p className="px-2 py-4 text-center text-sm text-slate-500">Nothing yet.</p>
+              <p className="px-2 py-4 text-center text-sm text-slate-500 dark:text-slate-400">Nothing yet.</p>
             ) : (
               <ul className="max-h-80 space-y-0.5 overflow-y-auto">
                 {notifications.items.map((n) => (
@@ -139,11 +139,13 @@ export function NotificationBell({ tone = "dark" }: { tone?: "dark" | "light" })
                     key={n.id}
                     className={cn(
                       "rounded-lg px-2 py-2 text-sm",
-                      n.readAt ? "text-slate-500" : "bg-indigo-50 text-slate-900",
+                      n.readAt
+                        ? "text-slate-500 dark:text-slate-400"
+                        : "bg-indigo-50 text-slate-900 dark:bg-indigo-500/10 dark:text-slate-100",
                     )}
                   >
                     {describe(n)}
-                    <p className="mt-0.5 text-[10px] text-slate-400">{new Date(n.createdAt).toLocaleString()}</p>
+                    <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">{new Date(n.createdAt).toLocaleString()}</p>
                   </li>
                 ))}
               </ul>

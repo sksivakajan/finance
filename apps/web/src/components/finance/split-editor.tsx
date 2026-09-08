@@ -38,7 +38,7 @@ export function SplitEditor({
   const percentTotal = value.participantIds.reduce((sum, id) => sum + Number(value.percentages[id] ?? "0"), 0);
 
   return (
-    <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+    <div className="space-y-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3">
       <div>
         <Label htmlFor="split-method">Split method</Label>
         <Select
@@ -66,9 +66,9 @@ export function SplitEditor({
                   id={`participant-${p.id}`}
                   checked={checked}
                   onChange={() => toggleParticipant(p.id)}
-                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500"
                 />
-                <label htmlFor={`participant-${p.id}`} className="flex-1 text-sm text-slate-700">
+                <label htmlFor={`participant-${p.id}`} className="flex-1 text-sm text-slate-700 dark:text-slate-200">
                   {p.displayName ?? p.usernameDisplay}
                 </label>
                 {checked && value.splitMethod === "EXACT" && (
@@ -106,7 +106,7 @@ export function SplitEditor({
           })}
         </div>
         {value.participantIds.length === 0 && (
-          <p className="mt-1 text-xs text-slate-500">Pick at least one person to split with.</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Pick at least one person to split with.</p>
         )}
         {value.splitMethod === "PERCENTAGE" && value.participantIds.length > 0 && (
           <p className={`mt-1 text-xs ${percentTotal === 100 ? "text-emerald-700" : "text-amber-600"}`}>

@@ -20,20 +20,20 @@ export function CategoryList({ entries, currency }: { entries: CategoryBreakdown
         return (
           <li key={entry.categoryId}>
             <div className="flex items-center justify-between text-sm">
-              <span className="flex items-center gap-2 font-medium text-slate-900">
+              <span className="flex items-center gap-2 font-medium text-slate-900 dark:text-slate-50">
                 <span aria-hidden="true">{categoryEmoji(entry.icon)}</span>
                 {entry.name}
               </span>
-              <span className="tabular-nums text-slate-900">{formatMoney(entry.amountMinor, currency)}</span>
+              <span className="tabular-nums text-slate-900 dark:text-slate-50">{formatMoney(entry.amountMinor, currency)}</span>
             </div>
             <div className="mt-1.5 flex items-center gap-2">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                 <div
                   className={`h-full rounded-full ${BAR_COLORS[i % BAR_COLORS.length]}`}
                   style={{ width: `${Math.max(pct, 2)}%` }}
                 />
               </div>
-              <span className="w-10 shrink-0 text-right text-xs text-slate-400">{pct.toFixed(1)}%</span>
+              <span className="w-10 shrink-0 text-right text-xs text-slate-400 dark:text-slate-500">{pct.toFixed(1)}%</span>
             </div>
           </li>
         );

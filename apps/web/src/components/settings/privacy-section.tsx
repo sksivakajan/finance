@@ -45,8 +45,8 @@ export function PrivacySection() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900">Privacy</h2>
-        <p className="text-sm text-slate-500">Control who can find you and interact with you.</p>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-50">Privacy</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Control who can find you and interact with you.</p>
       </div>
 
       <Card className="space-y-5">
@@ -54,7 +54,7 @@ export function PrivacySection() {
           <div key={field.key} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <Label className="mb-0">{field.label}</Label>
-              <p className="text-xs text-slate-500">{field.description}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{field.description}</p>
             </div>
             <div className="flex items-center gap-2 sm:w-48 sm:shrink-0">
               <Select

@@ -67,7 +67,7 @@ export function IncomeChart({ points, currency }: { points: MonthlySeriesPoint[]
 
   return (
     <div className="mt-1 flex gap-2">
-      <div className="flex w-16 shrink-0 flex-col justify-between py-4 text-right text-[10px] tabular-nums text-slate-400">
+      <div className="flex w-16 shrink-0 flex-col justify-between py-4 text-right text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
         {ticks.map((t, i) => (
           <span key={i}>{formatMoney(Math.round(t).toString(), currency)}</span>
         ))}
@@ -135,7 +135,7 @@ export function IncomeChart({ points, currency }: { points: MonthlySeriesPoint[]
             </p>
           </div>
         )}
-        <div className="mt-1 flex justify-between pl-1 pr-1 text-[10px] text-slate-400">
+        <div className="mt-1 flex justify-between pl-1 pr-1 text-[10px] text-slate-400 dark:text-slate-500">
           {points.map((p, i) => (
             <span key={p.month} className={i === hoverIndex ? "font-semibold text-violet-600" : ""}>
               {monthLabel(p.month)}

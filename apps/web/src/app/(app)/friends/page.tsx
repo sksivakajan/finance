@@ -34,6 +34,10 @@ type SortKey = "name" | "youOwe" | "owedToYou";
 
 function Avatar({ user }: { user: FriendUser }) {
   const name = user.displayName ?? user.usernameDisplay;
+  if (user.avatarUrl) {
+    // eslint-disable-next-line @next/next/no-img-element -- proxied same-origin /uploads URL, not an <Image>-optimizable remote host
+    return <img src={user.avatarUrl} alt="" className="h-11 w-11 shrink-0 rounded-full object-cover" />;
+  }
   const initial = name.charAt(0).toUpperCase();
   const palette = paletteForKey(user.id);
   return (
@@ -148,7 +152,7 @@ export default function FriendsPage() {
             type="button"
             onClick={() => searchRef.current?.focus()}
             aria-label="Add friend"
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:text-slate-50 dark:hover:text-slate-100"
           >
             <PlusIcon className="h-5 w-5" />
           </button>
@@ -156,8 +160,8 @@ export default function FriendsPage() {
       />
       <div className="hidden flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:flex">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Friends</h1>
-          <p className="text-sm text-slate-500">Find people, manage requests, and start conversations.</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50">Friends</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Find people, manage requests, and start conversations.</p>
         </div>
         <Button onClick={() => searchRef.current?.focus()} className="shrink-0 rounded-xl">
           <PlusIcon className="h-4 w-4" />
@@ -166,10 +170,10 @@ export default function FriendsPage() {
       </div>
 
       <Card>
-        <p className="text-sm font-semibold text-slate-900">Find people</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Find people</p>
         <form onSubmit={handleSearchSubmit} className="mt-3 flex gap-3">
           <div className="relative flex-1">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               ref={searchRef}
               type="text"
@@ -177,13 +181,13 @@ export default function FriendsPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search by username"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 py-2.5 pl-9 pr-4 text-sm text-slate-900 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
             />
           </div>
           <button
             type="button"
             aria-label="Filter"
-            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60"
           >
             <FilterIcon className="h-4 w-4" />
           </button>
@@ -196,15 +200,15 @@ export default function FriendsPage() {
                 <Spinner />
               </div>
             ) : !results || results.items.length === 0 ? (
-              <p className="py-2 text-sm text-slate-500">No matching users.</p>
+              <p className="py-2 text-sm text-slate-500 dark:text-slate-400">No matching users.</p>
             ) : (
               results.items.map((u) => (
-                <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2">
+                <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2">
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar user={u} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{u.displayName ?? u.usernameDisplay}</p>
-                      <p className="truncate text-xs text-slate-500">@{u.usernameDisplay}</p>
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{u.displayName ?? u.usernameDisplay}</p>
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">@{u.usernameDisplay}</p>
                     </div>
                   </div>
                   <Button size="sm" onClick={() => void handleSend(u.username)} isLoading={sendRequest.isPending}>
@@ -219,15 +223,15 @@ export default function FriendsPage() {
 
       {incoming && incoming.items.length > 0 && (
         <Card>
-          <p className="text-sm font-semibold text-slate-900">Requests for you</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Requests for you</p>
           <ul className="mt-3 space-y-2">
             {incoming.items.map((req) => (
-              <li key={req.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2">
+              <li key={req.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar user={req.user} />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{req.user.displayName ?? req.user.usernameDisplay}</p>
-                    <p className="truncate text-xs text-slate-500">@{req.user.usernameDisplay}</p>
+                    <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{req.user.displayName ?? req.user.usernameDisplay}</p>
+                    <p className="truncate text-xs text-slate-500 dark:text-slate-400">@{req.user.usernameDisplay}</p>
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -250,13 +254,13 @@ export default function FriendsPage() {
 
       {outgoing && outgoing.items.length > 0 && (
         <Card>
-          <p className="text-sm font-semibold text-slate-900">Sent requests</p>
+          <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Sent requests</p>
           <ul className="mt-3 space-y-2">
             {outgoing.items.map((req) => (
-              <li key={req.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2">
+              <li key={req.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 dark:border-slate-800 px-3 py-2">
                 <div className="flex min-w-0 items-center gap-3">
                   <Avatar user={req.user} />
-                  <p className="truncate text-sm font-medium text-slate-900">{req.user.displayName ?? req.user.usernameDisplay}</p>
+                  <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{req.user.displayName ?? req.user.usernameDisplay}</p>
                 </div>
                 <Button size="sm" variant="ghost" onClick={() => void respond.mutateAsync({ id: req.id, action: "cancel" })}>
                   Cancel
@@ -270,7 +274,7 @@ export default function FriendsPage() {
       <Card className="p-0">
         <div className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-slate-900">Your friends</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Your friends</p>
             {friends && friends.items.length > 0 && (
               <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-indigo-100 px-1.5 text-xs font-semibold text-indigo-700">
                 {friends.items.length}
@@ -279,7 +283,7 @@ export default function FriendsPage() {
           </div>
           {friends && friends.items.length > 1 && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-500">Sort by</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Sort by</span>
               <Select
                 value={sortKey}
                 onChange={(e) => setSortKey(e.target.value as SortKey)}
@@ -302,7 +306,7 @@ export default function FriendsPage() {
             <EmptyState title="No friends yet" description="Search for a username above to send your first friend request." />
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
+          <ul className="divide-y divide-slate-100 dark:divide-slate-800">
             {sortedFriends.map((f) => {
               const bal = balanceFor(f);
               return (
@@ -310,8 +314,8 @@ export default function FriendsPage() {
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar user={f.user} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-slate-900">{f.user.displayName ?? f.user.usernameDisplay}</p>
-                      <p className="truncate text-xs text-slate-500">@{f.user.usernameDisplay}</p>
+                      <p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-50">{f.user.displayName ?? f.user.usernameDisplay}</p>
+                      <p className="truncate text-xs text-slate-500 dark:text-slate-400">@{f.user.usernameDisplay}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
@@ -320,7 +324,7 @@ export default function FriendsPage() {
                         <ArrowUpIcon className="h-4 w-4" />
                       </span>
                       <div>
-                        <p className="text-xs text-slate-500">You owe</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">You owe</p>
                         <p className="text-sm font-semibold tabular-nums text-emerald-700">
                           {formatMoney(String(bal.youOweMinor), bal.currency)}
                         </p>
@@ -331,7 +335,7 @@ export default function FriendsPage() {
                         <ArrowDownIcon className="h-4 w-4" />
                       </span>
                       <div>
-                        <p className="text-xs text-slate-500">Owed to you</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Owed to you</p>
                         <p className="text-sm font-semibold tabular-nums text-rose-700">
                           {formatMoney(String(bal.owedToYouMinor), bal.currency)}
                         </p>
@@ -349,14 +353,14 @@ export default function FriendsPage() {
                       <button
                         type="button"
                         onClick={() => void removeFriend.mutateAsync(f.friendshipId)}
-                        className="text-xs font-medium text-slate-400 hover:text-red-600"
+                        className="text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                       >
                         Remove
                       </button>
                       <button
                         type="button"
                         onClick={() => void blockUser.mutateAsync(f.user.id)}
-                        className="text-xs font-medium text-slate-400 hover:text-red-600"
+                        className="text-xs font-medium text-slate-400 dark:text-slate-500 hover:text-red-600"
                       >
                         Block
                       </button>
@@ -376,8 +380,8 @@ export default function FriendsPage() {
               <LockIcon className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Blocked users</p>
-              <p className="text-xs text-slate-500">View and manage the people you&apos;ve blocked.</p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Blocked users</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">View and manage the people you&apos;ve blocked.</p>
             </div>
           </div>
           <Button variant="secondary" size="sm" onClick={() => setShowBlocked((v) => !v)}>
@@ -387,16 +391,16 @@ export default function FriendsPage() {
           </Button>
         </div>
         {showBlocked && (
-          <div className="mt-4 border-t border-slate-100 pt-4">
+          <div className="mt-4 border-t border-slate-100 dark:border-slate-800 pt-4">
             {!blocked || blocked.items.length === 0 ? (
-              <p className="text-sm text-slate-500">You haven&apos;t blocked anyone.</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">You haven&apos;t blocked anyone.</p>
             ) : (
               <ul className="space-y-2">
                 {blocked.items.map((u) => (
                   <li key={u.id} className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 items-center gap-3">
                       <Avatar user={u} />
-                      <p className="truncate text-sm text-slate-900">@{u.usernameDisplay}</p>
+                      <p className="truncate text-sm text-slate-900 dark:text-slate-50">@{u.usernameDisplay}</p>
                     </div>
                     <Button size="sm" variant="secondary" onClick={() => void unblockUser.mutateAsync(u.id)}>
                       Unblock
@@ -413,8 +417,8 @@ export default function FriendsPage() {
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <StayConnectedIllustration />
           <div>
-            <p className="text-sm font-semibold text-slate-900">Stay connected</p>
-            <p className="text-sm text-slate-500">Add friends, split expenses, and settle up with ease.</p>
+            <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">Stay connected</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Add friends, split expenses, and settle up with ease.</p>
           </div>
         </div>
         <Button variant="secondary" size="sm" className="shrink-0">

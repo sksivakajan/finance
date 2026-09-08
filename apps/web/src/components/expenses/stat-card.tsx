@@ -44,11 +44,11 @@ export function ExpenseStatCard({
         <span className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-lg", toneStyle.bg, toneStyle.text)}>
           {icon}
         </span>
-        <span className="text-sm font-medium text-slate-500">{label}</span>
+        <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</span>
       </div>
-      <p className="mt-3 truncate text-2xl font-semibold tabular-nums text-slate-900">{value}</p>
+      <p className="mt-3 truncate text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">{value}</p>
       <div className="mt-1 flex items-end justify-between gap-2">
-        <p className="text-xs text-slate-500">{sublabel}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{sublabel}</p>
         <Sparkline color={toneStyle.spark} />
       </div>
     </Card>

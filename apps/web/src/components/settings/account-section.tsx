@@ -2,7 +2,7 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { ApiError, api, toAbsoluteApiUrl } from "@/lib/api-client";
+import { ApiError, api } from "@/lib/api-client";
 import { useUpdateProfile } from "@/lib/hooks/use-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,7 @@ export function AccountSection() {
     setIsUploadingAvatar(true);
     try {
       const { url } = await api.uploadFile(file);
-      await updateProfile.mutateAsync({ avatarUrl: toAbsoluteApiUrl(url) });
+      await updateProfile.mutateAsync({ avatarUrl: url });
       await refreshUser();
     } catch (err) {
       setAvatarError(err instanceof ApiError ? err.message : "Couldn't upload that photo.");

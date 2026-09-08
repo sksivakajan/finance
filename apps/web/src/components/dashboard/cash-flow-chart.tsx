@@ -68,13 +68,13 @@ export function CashFlowChart({ points, currency }: { points: BalanceHistoryPoin
 
   return (
     <div>
-      <div className="flex gap-4 text-xs text-slate-400">
+      <div className="flex gap-4 text-xs text-slate-400 dark:text-slate-500">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-violet-600" /> Net balance
         </span>
       </div>
       <div className="mt-1 flex gap-2">
-        <div className="flex w-16 shrink-0 flex-col justify-between py-4 text-right text-[10px] tabular-nums text-slate-400">
+        <div className="flex w-16 shrink-0 flex-col justify-between py-4 text-right text-[10px] tabular-nums text-slate-400 dark:text-slate-500">
           {ticks.map((t, i) => (
             <span key={i}>{formatMoney(Math.round(t).toString(), currency)}</span>
           ))}

@@ -89,10 +89,10 @@ export default function DashboardPage() {
         subtitle="Here's what's happening with your finances today."
       />
       <div className="hidden md:block">
-        <h1 className="text-xl font-semibold text-slate-900">
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-50">
           {greeting}, {user?.profile?.displayName} <span aria-hidden="true">👋</span>
         </h1>
-        <p className="text-sm text-slate-500">Here&apos;s what&apos;s happening with your finances today.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Here&apos;s what&apos;s happening with your finances today.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -134,7 +134,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card className="lg:col-span-2">
           <div className="mb-2 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Cash Flow Overview</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Cash Flow Overview</CardTitle>
             <Select value={chartDays} onChange={(e) => setChartDays(Number(e.target.value))} className="w-40">
               {CHART_RANGES.map((r) => (
                 <option key={r.days} value={r.days}>
@@ -143,8 +143,8 @@ export default function DashboardPage() {
               ))}
             </Select>
           </div>
-          <p className="text-2xl font-semibold tabular-nums text-slate-900">{formatMoney(data.balance.amountMinor, currency)}</p>
-          <p className="text-xs text-slate-500">Net balance</p>
+          <p className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-50">{formatMoney(data.balance.amountMinor, currency)}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Net balance</p>
           {historyLoading || !history ? (
             <div className="flex h-48 items-center justify-center">
               <Spinner />
@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Upcoming Payments</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Upcoming Payments</CardTitle>
             <Link href="/scheduled-payments" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
               View all
             </Link>
@@ -169,12 +169,12 @@ export default function DashboardPage() {
             <ul className="space-y-3">
               {data.upcoming.items.map((item) => (
                 <li key={item.id} className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                     <CalendarIcon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-900">{item.name}</p>
-                    <p className="text-xs tabular-nums text-slate-500">{formatMoney(item.amountMinor, item.currency)}</p>
+                    <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{item.name}</p>
+                    <p className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{formatMoney(item.amountMinor, item.currency)}</p>
                   </div>
                   <DueBadge days={daysUntil(item.dueDate)} />
                 </li>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Top Expense Categories</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Top Expense Categories</CardTitle>
           </div>
           {categoriesLoading || !categories ? (
             <div className="flex justify-center py-8">
@@ -200,7 +200,7 @@ export default function DashboardPage() {
 
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Friends Balance</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Friends Balance</CardTitle>
             <Link href="/balances" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
               View all
             </Link>
@@ -210,7 +210,7 @@ export default function DashboardPage() {
 
         <Card>
           <div className="mb-3 flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-slate-900">Recent Transactions</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Recent Transactions</CardTitle>
             <Link href="/expenses" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
               View all
             </Link>
@@ -221,15 +221,15 @@ export default function DashboardPage() {
               description="Start tracking your spending to understand where your money goes."
             />
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
               {data.recentTransactions.slice(0, 5).map((tx) => (
                 <li key={tx.id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-900">{tx.label}</p>
-                    <p className="text-xs text-slate-500">{new Date(tx.date).toLocaleDateString()}</p>
+                    <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-50">{tx.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(tx.date).toLocaleDateString()}</p>
                   </div>
                   <span
-                    className={`shrink-0 text-sm font-medium tabular-nums ${tx.type === "INCOME" ? "text-emerald-700" : "text-slate-900"}`}
+                    className={`shrink-0 text-sm font-medium tabular-nums ${tx.type === "INCOME" ? "text-emerald-700" : "text-slate-900 dark:text-slate-50"}`}
                   >
                     {tx.type === "INCOME" ? "+" : "-"}
                     {formatMoney(tx.amountMinor, tx.currency)}
@@ -244,7 +244,7 @@ export default function DashboardPage() {
       {BigInt(data.loanObligations.remainingMinor) > 0n && (
         <Card>
           <CardTitle>Loans you owe</CardTitle>
-          <p className="mt-2 text-xl font-semibold text-slate-900">
+          <p className="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-50">
             {formatMoney(data.loanObligations.remainingMinor, currency)}
           </p>
           <Link href="/loans" className="mt-2 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500">
@@ -260,11 +260,11 @@ export default function DashboardPage() {
               <SparkleIcon className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-slate-700 dark:text-slate-200">
                 Your spending is <span className="font-semibold text-emerald-700">{Math.abs(spendingChangePct)}% lower</span> than
                 last month <span aria-hidden="true">🎉</span>
               </p>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Great job! You&apos;ve saved {formatMoney(Math.abs(savedAmountMinor).toString(), currency)} compared to last month.
               </p>
             </div>
