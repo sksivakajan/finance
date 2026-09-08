@@ -39,6 +39,7 @@ services:
       corepack enable && corepack prepare pnpm@11.22.0 --activate &&
       pnpm install --frozen-lockfile &&
       pnpm build:shared &&
+      pnpm --filter @finance/api run prisma:generate &&
       pnpm --filter @finance/api build &&
       pnpm --filter @finance/api run prisma:deploy
     startCommand: pnpm --filter @finance/api start:prod
