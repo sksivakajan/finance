@@ -16,12 +16,10 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  // Temporary connectivity check for Phase 1, Step 3 verification.
-  // Superseded by a proper health module once the auth/user modules land.
   @Public()
-  @Get('health/db')
-  async checkDb() {
+  @Get('health')
+  async health() {
     await this.prisma.$queryRaw`SELECT 1`;
-    return { status: 'ok', database: 'connected' };
+    return { status: 'ok' };
   }
 }

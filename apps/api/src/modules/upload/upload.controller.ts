@@ -1,6 +1,4 @@
 import { randomBytes } from 'node:crypto';
-import path from 'node:path';
-import fs from 'node:fs';
 import {
   BadRequestException,
   Controller,
@@ -13,14 +11,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import type { Request, Response } from 'express';
+import { memoryStorage } from 'multer';
+import type { Response } from 'express';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { Public } from '../../common/decorators/public.decorator.js';
 import type { AccessTokenPayload } from '../auth/services/token.service.js';
+import { StorageService } from './storage.service.js';
 
-// Receipts/attachments only for now (spec §29 "secure file uploads, file type
-// validation"). Extend this allowlist deliberately, not by relaxing it.
 const ALLOWED_MIME_TYPES: Record<string, string> = {
   'image/jpeg': '.jpg',
   'image/png': '.png',
@@ -29,22 +26,13 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   'application/pdf': '.pdf',
 };
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
-// Read directly from process.env (already populated by main.ts's dotenv load
-// before Nest bootstraps): multer's storage config is built once at module-
-// load time via the @UseInterceptors decorator, before Nest's DI container
-// exists, so an injected EnvService isn't reachable here.
-const UPLOADS_ROOT = path.resolve(
-  process.cwd(),
-  process.env.STORAGE_LOCAL_PATH ?? './uploads',
-);
-// Matches the filenames this controller itself generates below — never
-// trust a filename coming back from the client/URL beyond this shape, or a
-// path-traversal payload like "../../etc/passwd" becomes reachable.
 const SAFE_FILENAME = /^[a-f0-9]{32}\.[a-z0-9]+$/;
 const SAFE_USER_ID = /^[a-zA-Z0-9_-]+$/;
 
 @Controller('uploads')
 export class UploadController {
+  constructor(private readonly storage: StorageService) {}
+
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
@@ -63,33 +51,10 @@ export class UploadController {
         }
         cb(null, true);
       },
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access --
-       * multer's own module has no bundled types; src/types/multer.d.ts
-       * supplies enough for `tsc` (verified clean via tsc -p tsconfig.build.json),
-       * but typescript-eslint's separate resolution doesn't pick up the
-       * ambient module augmentation here. Delete this block once
-       * @types/multer is installed (blocked on registry access at the time
-       * of writing) and the ambient declaration file is removed. */
-      storage: diskStorage({
-        destination: (req, _file, cb) => {
-          const user = (req as Request & { user: AccessTokenPayload }).user;
-          const dir = path.join(UPLOADS_ROOT, user.sub);
-          fs.mkdirSync(dir, { recursive: true });
-          cb(null, dir);
-        },
-        // Unguessable key per docs/BLUEPRINT.md §29 ("object storage keys are
-        // unguessable") — never the client-supplied original filename.
-        filename: (_req, file, cb) => {
-          cb(
-            null,
-            `${randomBytes(16).toString('hex')}${ALLOWED_MIME_TYPES[file.mimetype]}`,
-          );
-        },
-      }),
-      /* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+      storage: memoryStorage(),
     }),
   )
-  upload(
+  async upload(
     @CurrentUser() user: AccessTokenPayload,
     @UploadedFile() file?: Express.Multer.File,
   ) {
@@ -99,21 +64,15 @@ export class UploadController {
         message: 'No file was uploaded.',
       });
     }
-    return { url: `/uploads/${user.sub}/${file.filename}` };
+    const filename = `${randomBytes(16).toString('hex')}${ALLOWED_MIME_TYPES[file.mimetype]}`;
+    await this.storage.put(user.sub, filename, file.buffer, file.mimetype);
+    return { url: `/uploads/${user.sub}/${filename}` };
   }
 
-  // Deliberately @Public(): an <img src> can't attach an Authorization
-  // header, so this can't sit behind the JWT guard the way every other
-  // route does. Access control instead comes from the URL itself being
-  // unguessable — a 32-hex-char (128-bit) random filename per
-  // docs/BLUEPRINT.md §29's "object storage keys are unguessable" — the
-  // same trust model as an S3 presigned URL or a Cloudinary asset link.
-  // Enumeration is infeasible; the /:userId/ segment groups files per user
-  // but grants no additional access on its own, so it's read-only routing,
-  // not an authorization boundary. Path-traversal is still checked below.
+  // Files are served through the same-origin proxy for both local and S3 storage.
   @Public()
   @Get(':userId/:filename')
-  serve(
+  async serve(
     @Param('userId') userId: string,
     @Param('filename') filename: string,
     @Res() res: Response,
@@ -124,19 +83,8 @@ export class UploadController {
         message: 'File not found.',
       });
     }
-    const filePath = path.join(UPLOADS_ROOT, userId, filename);
-    if (!filePath.startsWith(path.join(UPLOADS_ROOT, userId))) {
-      throw new NotFoundException({
-        code: 'FILE_NOT_FOUND',
-        message: 'File not found.',
-      });
-    }
-    if (!fs.existsSync(filePath)) {
-      throw new NotFoundException({
-        code: 'FILE_NOT_FOUND',
-        message: 'File not found.',
-      });
-    }
-    res.sendFile(filePath);
+    const file = await this.storage.get(userId, filename);
+    if (file.contentType) res.type(file.contentType);
+    res.send(file.body);
   }
 }

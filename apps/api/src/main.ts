@@ -9,9 +9,12 @@ import type { Express } from 'express';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { EnvService } from './config/env.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const env = app.get(EnvService).values;
+  (app.getHttpAdapter().getInstance() as Express).set('trust proxy', 1);
   app.use(cookieParser());
   app.useGlobalFilters(new AllExceptionsFilter());
   // Money fields are BigInt (see docs/BLUEPRINT.md §41); Express's default
@@ -22,9 +25,9 @@ async function bootstrap() {
       typeof value === 'bigint' ? value.toString() : value,
   );
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    origin: env.CORS_ORIGIN,
     credentials: true,
   });
-  await app.listen(process.env.API_PORT ?? 4000);
+  await app.listen(env.PORT ?? env.API_PORT, '0.0.0.0');
 }
 void bootstrap();
